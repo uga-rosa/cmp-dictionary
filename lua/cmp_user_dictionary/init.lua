@@ -9,6 +9,10 @@ end
 local dictionaries = vim.api.nvim_get_option("dictionary")
 
 local available_paths = (function()
+  if dictionaries == "" then
+    print("No dictionary set")
+    return {}
+  end
   local result = {}
   local paths = vim.split(dictionaries, ",")
   for _, path in ipairs(paths) do
