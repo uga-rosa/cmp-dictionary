@@ -91,8 +91,6 @@ source.read_dictionary = function()
   end)
 end
 
-source.read_dictionary()
-
 local get_candidate = function(req)
   if #items == 0 then
     return {}
