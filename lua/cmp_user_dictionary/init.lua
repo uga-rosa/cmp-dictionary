@@ -1,53 +1,124 @@
-local M = {}
+local source = {}
 
-local f = vim.fn
-
-M.new = function()
-  return setmetatable({}, { __index = M })
+source.new = function()
+  local self = setmetatable({}, { __index = source })
+  return self
 end
 
-local dictionaries = vim.api.nvim_get_option("dictionary")
+local f = vim.fn
+local a = vim.api
+local uv = vim.loop
 
-local available_paths = (function()
-  if dictionaries == "" then
-    print("No dictionary set")
+vim.g.cmp_user_dictionary_silent = true
+
+local echo = function(msg)
+  if not vim.g.cmp_user_dictionary_silent then
+    print("[cmp_user_dictionary] " .. msg)
+  end
+end
+
+local post_dic, dictionaries
+local items = {}
+local loaded = false
+
+source.read_dictionary = function()
+  post_dic = dictionaries
+
+  local is_buf, dic = pcall(a.nvim_buf_get_option, 0, "dictionary")
+  dictionaries = is_buf and dic or a.nvim_get_option("dictionary")
+
+  if post_dic == dictionaries then
+    echo("No change")
+    return
+  end
+
+  items = {}
+
+  local available_paths = (function()
+    if dictionaries == "" then
+      return {}
+    end
+    local result = {}
+    local paths = vim.split(dictionaries, ",")
+    for _, path in ipairs(paths) do
+      local p = f.expand(path)
+      if f.filereadable(p) == 1 then
+        result[#result + 1] = p
+      else
+        echo("No such file: " .. p)
+      end
+    end
+    return result
+  end)()
+
+  if #available_paths == 0 then
+    echo("No dictionary loaded")
+    loaded = false
+    return
+  end
+
+  local datas = {}
+
+  for _, path in ipairs(available_paths) do
+    uv.fs_open(path, "r", 438, function(err1, fd)
+      assert(not err1, err1)
+      uv.fs_fstat(fd, function(err2, stat)
+        assert(not err2, err2)
+        uv.fs_read(fd, stat.size, 0, function(err3, data)
+          assert(not err3, err3)
+          uv.fs_close(fd, function(err4)
+            assert(not err4, err4)
+            datas[#datas + 1] = data
+          end)
+        end)
+      end)
+    end)
+  end
+
+  local timer = uv.new_timer()
+  timer:start(0, 100, function()
+    if #datas == #available_paths then
+      for _, data in ipairs(datas) do
+        for c in vim.gsplit(data, "%s") do
+          items[#items + 1] = c
+        end
+      end
+      table.sort(items)
+      timer:close()
+      loaded = true
+      echo("All dictionaries are loaded")
+    end
+  end)
+end
+
+source.read_dictionary()
+
+local get_candidate = function(req)
+  if #items == 0 then
     return {}
   end
   local result = {}
-  local paths = vim.split(dictionaries, ",")
-  for _, path in ipairs(paths) do
-    local p = f.expand(path)
-    if f.filereadable(p) == 1 then
-      result[#result + 1] = p
-    else
-      print("[cmp_user_dictionary] No such file: " .. p)
-    end
-  end
-  return result
-end)()
-
-local loaded = false
-
-local items = (function()
-  local result = {}
-  for _, path in ipairs(available_paths) do
-    for line in io.lines(path) do
-      local words = vim.split(line, "%s")
-      for _, word in ipairs(words) do
-        result[#result + 1] = { label = word }
+  local flag = false
+  for _, item in ipairs(items) do
+    if vim.startswith(item, req) then
+      result[#result + 1] = { label = item }
+      if not flag then
+        flag = true
       end
+    elseif flag then
+      break
     end
   end
-  loaded = #result ~= 0
-  return result
-end)()
+  return { items = result, isIncomplete = true }
+end
 
-function M:is_available()
+function source:is_available()
   return loaded
 end
 
-function M:complete(_, callback)
-  callback(items)
+function source:complete(request, callback)
+  local req = string.sub(request.context.cursor_before_line, request.offset)
+  callback(get_candidate(req))
 end
 
-return M
+return source
