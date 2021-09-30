@@ -60,9 +60,12 @@ augroup MyCmpUserDictionary
 augroup END
 ```
 
+If you want to enable or disable this source itself by filetype, use [cmp.setup.buffer](https://github.com/hrsh7th/nvim-cmp#sources-type-tablecmpsourceconfig).
+
 ## Global options
 
 `g:cmp_user_dictionary_silent` is a setting for whether to output debug messages.
+The default settings are as follows.
 
 ```lua
 vim.g.cmp_user_dictionary_silent = true
