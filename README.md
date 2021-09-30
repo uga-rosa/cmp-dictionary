@@ -23,13 +23,6 @@ require("cmp").setup({
 
 ## Configuration
 
-You can download dic from [aspell.net](https://ftp.gnu.org/gnu/aspell/dict/0index.html) or installing by package manager , xbps extract to
-
-```bash
-$ ls /usr/share/dict/
-american-english  british-english  words
-```
-
 to pick any dic with `neovim/vim` you can use `set dictionary`:
 
 ```vim
@@ -42,11 +35,26 @@ In lua
 vim.opt.dictionary:append("/usr/share/dict/words")
 ```
 
-If you just want an English dictionary, you can also use [cmp-look](https://github.com/octaltree/cmp-look).
+You can download dic from [aspell.net](https://ftp.gnu.org/gnu/aspell/dict/0index.html) or installing by package manager , xbps extract to
+
+```bash
+$ ls /usr/share/dict/
+american-english  british-english  words
+```
+
+## How to create your own dictionary
+
+The dictionary is recognized as a list delimited by `\s`. `\s` is a space, `\t`, `\n`, `\r`, `\f`.
+For example, if you use the following file as a dictionary, the source to be added is `{"hello", "world", "!"}`.
+
+```txt
+hello
+world !
+```
 
 ## Update dictionary
 
-When the filetype is changed, check the `dictionary` and update the dictionary if it is changed.
+On `FileType *`, check the `dictionary` and update the dictionary if it is changed.
 Updating only the contents of the dictionary will not detect it.
 
 ## Use different dictionaries for each filetype
