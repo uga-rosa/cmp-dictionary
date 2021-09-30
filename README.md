@@ -1,8 +1,9 @@
-# cmp-user_dictionary
+# cmp-dictionary
 
-User dictionary completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)  
+Dictionary completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)  
 
-Use the dictionaries set in `dictionary` as the source for cmp. See `:h 'dictionary'`
+Use the dictionaries set in `dictionary` as the source for cmp.
+`:h 'dictionary'`
 
 ## setup
 
@@ -12,7 +13,7 @@ require("cmp").setup({
   sources = {
     -- other sources
     {
-      name = "user_dictionary",
+      name = "dictionary",
       -- If you use large dictionaries, this setting is recommended.
       keyword_length = 2,
     },
@@ -54,7 +55,7 @@ To set the dictionaries for each filetype, use setlocal in autocmd.
 setlocal does not pollute the global settings since it is only valid for that buffer.
 
 ```vim
-augroup MyCmpUserDictionary
+augroup MyCmpDictionary
   au!
   au FileType markdown setlocal dictionary=/path/to/dic1,/path/to/dic2
 augroup END
@@ -64,9 +65,9 @@ If you want to enable or disable this source itself by filetype, use [cmp.setup.
 
 ## Global options
 
-`g:cmp_user_dictionary_silent` is a setting for whether to output debug messages.
+`g:cmp_dictionary_silent` is a setting for whether to output debug messages.
 The default settings are as follows.
 
 ```lua
-vim.g.cmp_user_dictionary_silent = true
+vim.g.cmp_dictionary_silent = true
 ```

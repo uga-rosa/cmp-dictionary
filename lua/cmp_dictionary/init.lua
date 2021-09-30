@@ -9,11 +9,11 @@ local f = vim.fn
 local a = vim.api
 local uv = vim.loop
 
-vim.g.cmp_user_dictionary_silent = true
+vim.g.cmp_dictionary_silent = true
 
 local echo = function(msg)
-  if not vim.g.cmp_user_dictionary_silent then
-    print("[cmp_user_dictionary] " .. msg)
+  if not vim.g.cmp_dictionary_silent then
+    print("[cmp-dictionary] " .. msg)
   end
 end
 
