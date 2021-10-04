@@ -80,9 +80,9 @@ You can set `g:cmp_dictionary_exact`.
 ## Global options
 
 `g:cmp_dictionary_exact` decides how many characters at the beginning are used as the exact match.
-
+If the number of characters is less than g:cmp_dictionary_exact, no completion suggestions will be returned.
+It is recommended to be less than or equal to keyword_length.  
 Defaults: 2
 
-`g:cmp_dictionary_silent` is a setting for whether to output debug messages.
-
+`g:cmp_dictionary_silent` is a setting for whether to output debug messages.  
 Defaults: true
