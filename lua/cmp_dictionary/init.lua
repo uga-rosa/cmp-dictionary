@@ -136,7 +136,7 @@ local get_candidate = function(req)
     end
   end
 
-  return chache.result
+  return { items = chache.result, isIncomplete = true }
 end
 
 function source:is_available()
