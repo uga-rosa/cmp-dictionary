@@ -71,6 +71,13 @@ augroup END
 
 If you want to enable or disable this source itself by filetype, use [cmp.setup.buffer](https://github.com/hrsh7th/nvim-cmp#sources-type-tablecmpsourceconfig).
 
+## FAQ
+
+#### Some candidates don't show up.
+
+Returns only candidates where the first two letters match.
+In the future, I would like to reference the value of keyword_length, but currently this value is not visible in the source.
+
 ## Global options
 
 `g:cmp_dictionary_silent` is a setting for whether to output debug messages.
