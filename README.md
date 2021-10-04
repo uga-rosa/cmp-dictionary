@@ -14,7 +14,6 @@ require("cmp").setup({
     -- other sources
     {
       name = "dictionary",
-      -- If you use large dictionaries, this setting is recommended.
       keyword_length = 2,
     },
   }
@@ -75,14 +74,15 @@ If you want to enable or disable this source itself by filetype, use [cmp.setup.
 
 #### Some candidates don't show up.
 
-Returns only candidates where the first two letters match.
-In the future, I would like to reference the value of keyword_length, but currently this value is not visible in the source.
+Returns only candidates where the first two letters exact match by default.
+You can set `g:cmp_dictionary_exact`.
 
 ## Global options
 
-`g:cmp_dictionary_silent` is a setting for whether to output debug messages.
-The default settings are as follows.
+`g:cmp_dictionary_exact` decides how many characters at the beginning are used as the exact match.
 
-```lua
-vim.g.cmp_dictionary_silent = true
-```
+Defaults: 2
+
+`g:cmp_dictionary_silent` is a setting for whether to output debug messages.
+
+Defaults: true

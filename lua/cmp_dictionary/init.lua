@@ -13,6 +13,10 @@ if vim.g.cmp_dictionary_silent == nil then
   vim.g.cmp_dictionary_silent = true
 end
 
+if vim.g.cmp_dictionary_exact == nil then
+  vim.g.cmp_dictionary_exact = 2
+end
+
 local echo = function(msg)
   if not vim.g.cmp_dictionary_silent then
     print("[cmp-dictionary] " .. msg)
@@ -93,7 +97,7 @@ source.read_dictionary = function()
 
       table.sort(items)
 
-      local len = 2
+      local len = vim.g.cmp_dictionary_exact
       local _pre = items[1]:sub(1, len)
       indexes[_pre] = { start = 1 }
       local pre
@@ -145,7 +149,7 @@ end
 
 function source:complete(request, callback)
   local req = string.sub(request.context.cursor_before_line, request.offset)
-  local len = 2
+  local len = vim.g.cmp_dictionary_exact
   req = #req > len and req:sub(1, len) or req
   callback(get_candidate(req))
 end
