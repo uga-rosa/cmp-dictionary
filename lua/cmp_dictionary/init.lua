@@ -35,24 +35,24 @@ source.read_dictionary = function()
     return
   end
 
-  local available_paths = (function()
+  local paths = (function()
     if dictionaries == "" then
       return {}
     end
     local result = {}
-    local paths = vim.split(dictionaries, ",")
-    for _, path in ipairs(paths) do
-      local p = f.expand(path)
-      if f.filereadable(p) == 1 then
-        result[#result + 1] = p
+    local dics = vim.split(dictionaries, ",")
+    for i = 1, #dics do
+      local path = f.expand(dics[i])
+      if f.filereadable(path) == 1 then
+        result[#result + 1] = path
       else
-        echo("No such file: " .. p)
+        echo("No such file: " .. path)
       end
     end
     return result
   end)()
 
-  if #available_paths == 0 then
+  if #paths == 0 then
     echo("No dictionary loaded")
     loaded = false
     return
@@ -60,8 +60,8 @@ source.read_dictionary = function()
 
   local datas = {}
 
-  for i = 1, #available_paths do
-    uv.fs_open(available_paths[i], "r", 438, function(err1, fd)
+  for i = 1, #paths do
+    uv.fs_open(paths[i], "r", 438, function(err1, fd)
       assert(not err1, err1)
       uv.fs_fstat(fd, function(err2, stat)
         assert(not err2, err2)
@@ -80,7 +80,7 @@ source.read_dictionary = function()
 
   local timer = uv.new_timer()
   timer:start(0, 100, function()
-    if #datas == #available_paths then
+    if #datas == #paths then
       local c = 0
       for i = 1, #datas do
         for d in vim.gsplit(datas[i], "%s+") do
