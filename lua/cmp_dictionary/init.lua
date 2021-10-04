@@ -9,7 +9,9 @@ local f = vim.fn
 local a = vim.api
 local uv = vim.loop
 
-vim.g.cmp_dictionary_silent = true
+if vim.g.cmp_dictionary_silent == nil then
+  vim.g.cmp_dictionary_silent = true
+end
 
 local echo = function(msg)
   if not vim.g.cmp_dictionary_silent then
@@ -19,6 +21,7 @@ end
 
 local post_dic, dictionaries
 local items = {}
+local indexes = {}
 local loaded = false
 
 source.read_dictionary = function()
@@ -31,8 +34,6 @@ source.read_dictionary = function()
     echo("No change")
     return
   end
-
-  items = {}
 
   local available_paths = (function()
     if dictionaries == "" then
@@ -59,8 +60,8 @@ source.read_dictionary = function()
 
   local datas = {}
 
-  for _, path in ipairs(available_paths) do
-    uv.fs_open(path, "r", 438, function(err1, fd)
+  for i = 1, #available_paths do
+    uv.fs_open(available_paths[i], "r", 438, function(err1, fd)
       assert(not err1, err1)
       uv.fs_fstat(fd, function(err2, stat)
         assert(not err2, err2)
@@ -75,15 +76,37 @@ source.read_dictionary = function()
     end)
   end
 
+  items = {}
+
   local timer = uv.new_timer()
   timer:start(0, 100, function()
     if #datas == #available_paths then
-      for _, data in ipairs(datas) do
-        for c in vim.gsplit(data, "%s") do
-          items[#items + 1] = c
+      local c = 0
+      for i = 1, #datas do
+        for d in vim.gsplit(datas[i], "%s+") do
+          if d ~= "" then
+            c = c + 1
+            items[c] = d
+          end
         end
       end
+
       table.sort(items)
+
+      local len = 2
+      local _pre = items[1]:sub(1, len)
+      indexes[_pre] = { start = 1 }
+      local pre
+      for i = 2, #items do
+        pre = items[i]:sub(1, len)
+        if pre ~= _pre then
+          indexes[_pre].last = i - 1
+          indexes[pre] = { start = i }
+          _pre = pre
+        end
+      end
+      indexes[_pre].last = #items
+
       timer:close()
       loaded = true
       echo("All dictionaries are loaded")
@@ -91,23 +114,29 @@ source.read_dictionary = function()
   end)
 end
 
+local chache = {
+  req = "",
+  result = {},
+}
+
 local get_candidate = function(req)
-  if #items == 0 then
+  local index = indexes[req]
+  if not index then
     return {}
   end
-  local result = {}
-  local flag = false
-  for _, item in ipairs(items) do
-    if vim.startswith(item, req) then
-      result[#result + 1] = { label = item }
-      if not flag then
-        flag = true
-      end
-    elseif flag then
-      break
+
+  if chache.req ~= req then
+    chache.req = req
+    chache.result = {}
+
+    local c = 0
+    for i = index.start, index.last do
+      c = c + 1
+      chache.result[c] = { label = items[i] }
     end
   end
-  return { items = result, isIncomplete = true }
+
+  return chache.result
 end
 
 function source:is_available()
@@ -116,6 +145,8 @@ end
 
 function source:complete(request, callback)
   local req = string.sub(request.context.cursor_before_line, request.offset)
+  local len = 2
+  req = #req > len and req:sub(1, len) or req
   callback(get_candidate(req))
 end
 
