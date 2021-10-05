@@ -97,19 +97,30 @@ source.read_dictionary = function()
 
       table.sort(items)
 
-      local len = vim.g.cmp_dictionary_exact
-      local _pre = items[1]:sub(1, len)
-      indexes[_pre] = { start = 1 }
-      local pre
-      for i = 2, #items do
-        pre = items[i]:sub(1, len)
-        if pre ~= _pre then
-          indexes[_pre].last = i - 1
-          indexes[pre] = { start = i }
-          _pre = pre
+      local max_len = vim.g.cmp_dictionary_exact
+      if max_len == -1 then
+        for i = 1, #items do
+          if max_len < #items[i] then
+            max_len = #items[i]
+          end
         end
       end
-      indexes[_pre].last = #items
+      for len = 1, max_len do
+        local _pre = items[1]:sub(1, len)
+        indexes[_pre] = { start = 1 }
+        local pre
+        for j = 2, #items do
+          if #items[j] >= len then
+            pre = items[j]:sub(1, len)
+            if pre ~= _pre then
+              indexes[_pre].last = j - 1
+              indexes[pre] = { start = j }
+              _pre = pre
+            end
+          end
+        end
+        indexes[_pre].last = #items
+      end
 
       timer:close()
       loaded = true
@@ -126,7 +137,7 @@ local chache = {
 local get_candidate = function(req)
   local index = indexes[req]
   if not index then
-    return {}
+    return { items = {}, isIncomplete = true }
   end
 
   if chache.req ~= req then
