@@ -82,10 +82,10 @@ You can set `g:cmp_dictionary_exact`.
 `g:cmp_dictionary_exact` decides how many characters at the beginning are used as the exact match.
 If -1, only candidates with an exact prefix match will be returns.  
 
-The default value is 2.
+The default value is 2.  
 ![image](https://user-images.githubusercontent.com/82267684/135990926-846c6289-453a-4261-aa27-612302d6a993.png)
 
-If set to -1.
+If set to -1.  
 ![image](https://user-images.githubusercontent.com/82267684/135991149-32ddd711-eeba-481b-a47c-a4e63de39921.png)
 
 `g:cmp_dictionary_silent` is a setting for whether to output debug messages.  
