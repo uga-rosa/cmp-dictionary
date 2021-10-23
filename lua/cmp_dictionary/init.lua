@@ -122,17 +122,25 @@ source.read_dictionary = function()
         end
       end
       for len = 1, max_len do
-        local _pre = items[1]:sub(1, len)
-        indexes[_pre] = { start = 1 }
+        local s = 1
+        while #items[s] < len do
+          s = s + 1
+        end
+        local _pre = items[s]:sub(1, len)
+        indexes[_pre] = { start = s }
         local pre
-        for j = 2, #items do
+        for j = s + 1, #items do
           if #items[j] >= len then
             pre = items[j]:sub(1, len)
             if pre ~= _pre then
-              indexes[_pre].last = j - 1
+              if indexes[_pre].last == nil then
+                indexes[_pre].last = j - 1
+              end
               indexes[pre] = { start = j }
               _pre = pre
             end
+          elseif indexes[_pre].last == nil then
+            indexes[_pre].last = j - 1
           end
         end
         indexes[_pre].last = #items
