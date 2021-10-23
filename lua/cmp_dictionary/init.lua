@@ -104,6 +104,13 @@ source.read_dictionary = function()
         end
       end
 
+      if #items == 0 then
+        timer:close()
+        loaded = false
+        echo("Only empty dictionaries")
+        return
+      end
+
       table.sort(items)
 
       local max_len = vim.g.cmp_dictionary_exact
