@@ -23,6 +23,15 @@ local echo = function(msg)
   end
 end
 
+local function empty(arr, num)
+  for i = 1, num do
+    if arr[i] == nil then
+      return false
+    end
+  end
+  return true
+end
+
 local post_dic, dictionaries
 local items = {}
 local indexes = {}
@@ -73,7 +82,7 @@ source.read_dictionary = function()
           assert(not err3, err3)
           uv.fs_close(fd, function(err4)
             assert(not err4, err4)
-            datas[#datas + 1] = data
+            datas[i] = data
           end)
         end)
       end)
@@ -84,7 +93,7 @@ source.read_dictionary = function()
 
   local timer = uv.new_timer()
   timer:start(0, 100, function()
-    if #datas == #paths then
+    if empty(datas, #paths) then
       local c = 0
       for i = 1, #datas do
         for d in vim.gsplit(datas[i], "%s+") do
