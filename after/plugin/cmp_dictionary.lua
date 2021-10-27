@@ -1,5 +1,5 @@
 if vim.g.loaded_cmp_dictionary then
-  return
+    return
 end
 vim.g.loaded_cmp_dictionary = true
 
@@ -9,7 +9,7 @@ require("cmp_dictionary").read_dictionary()
 
 vim.cmd([[
 augroup _cmp_dictionary_
-  au!
-  au FileType * lua require("cmp_dictionary").read_dictionary()
+    au!
+    au FileType * lua require("cmp_dictionary").read_dictionary()
 augroup END
 ]])
