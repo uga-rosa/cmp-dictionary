@@ -23,13 +23,16 @@ local echo = function(msg)
     end
 end
 
-local function empty(arr, num)
-    for i = 1, num do
-        if arr[i] == nil then
-            return false
-        end
+local function tbl_len(tbl)
+    local res = 0
+    for _ in pairs(tbl) do
+        res = res + 1
     end
-    return true
+    return res
+end
+
+local function comp(items)
+    return items.label < items.label
 end
 
 local post_dic, dictionaries
@@ -37,11 +40,17 @@ local items = {}
 local indexes = {}
 local loaded = false
 
+function source:is_available()
+    return loaded
+end
+
 source.read_dictionary = function()
     post_dic = dictionaries
 
-    local is_buf, dic = pcall(a.nvim_buf_get_option, 0, "dictionary")
-    dictionaries = is_buf and dic or a.nvim_get_option("dictionary")
+    do
+        local is_buf, dic = pcall(a.nvim_buf_get_option, 0, "dictionary")
+        dictionaries = is_buf and dic or a.nvim_get_option("dictionary")
+    end
 
     if post_dic == dictionaries then
         echo("No change")
@@ -54,10 +63,11 @@ source.read_dictionary = function()
         end
         local result = {}
         local dics = vim.split(dictionaries, ",")
-        for i = 1, #dics do
-            local path = f.expand(dics[i])
+        for _, dic in ipairs(dics) do
+            local path = f.expand(dic)
             if f.filereadable(path) == 1 then
-                result[#result + 1] = path
+                local name = f.fnamemodify(path, ":t")
+                result[name] = path
             else
                 echo("No such file: " .. path)
             end
@@ -65,7 +75,7 @@ source.read_dictionary = function()
         return result
     end)()
 
-    if #paths == 0 then
+    if tbl_len(paths) == 0 then
         echo("No dictionary loaded")
         loaded = false
         return
@@ -73,16 +83,16 @@ source.read_dictionary = function()
 
     local datas = {}
 
-    for i = 1, #paths do
-        uv.fs_open(paths[i], "r", 438, function(err1, fd)
-            assert(not err1, err1)
+    for name, path in pairs(paths) do
+        uv.fs_open(path, "r", 438, function(err, fd)
+            assert(not err, err)
             uv.fs_fstat(fd, function(err2, stat)
                 assert(not err2, err2)
                 uv.fs_read(fd, stat.size, 0, function(err3, data)
                     assert(not err3, err3)
                     uv.fs_close(fd, function(err4)
                         assert(not err4, err4)
-                        datas[i] = data
+                        datas[name] = data
                     end)
                 end)
             end)
@@ -93,13 +103,12 @@ source.read_dictionary = function()
 
     local timer = uv.new_timer()
     timer:start(0, 100, function()
-        if empty(datas, #paths) then
-            local c = 0
-            for i = 1, #datas do
-                for d in vim.gsplit(datas[i], "%s+") do
-                    if d ~= "" then
-                        c = c + 1
-                        items[c] = d
+        if tbl_len(datas) == tbl_len(paths) then
+            for name, data in pairs(datas) do
+                local detail = "belong to `" .. name .. "`"
+                for w in vim.gsplit(data, "%s+") do
+                    if w ~= "" then
+                        table.insert(items, { label = w, detail = detail })
                     end
                 end
             end
@@ -111,27 +120,29 @@ source.read_dictionary = function()
                 return
             end
 
-            table.sort(items)
+            table.sort(items, comp)
 
             local max_len = vim.g.cmp_dictionary_exact
             if max_len == -1 then
-                for i = 1, #items do
-                    if max_len < #items[i] then
-                        max_len = #items[i]
+                for _, item in pairs(items) do
+                    if max_len < #item.label then
+                        max_len = #item.label
                     end
                 end
             end
+
             for len = 1, max_len do
                 local s = 1
-                while #items[s] < len do
+                while #items[s].label < len do
                     s = s + 1
                 end
-                local _pre = items[s]:sub(1, len)
+                local _pre = items[s].label:sub(1, len)
                 indexes[_pre] = { start = s }
                 local pre
                 for j = s + 1, #items do
-                    if #items[j] >= len then
-                        pre = items[j]:sub(1, len)
+                    local item = items[j].label
+                    if #item >= len then
+                        pre = item:sub(1, len)
                         if pre ~= _pre then
                             if indexes[_pre].last == nil then
                                 indexes[_pre].last = j - 1
@@ -167,19 +178,12 @@ local get_candidate = function(req)
     if chache.req ~= req then
         chache.req = req
         chache.result = {}
-
-        local c = 0
         for i = index.start, index.last do
-            c = c + 1
-            chache.result[c] = { label = items[i] }
+            table.insert(chache.result, items[i])
         end
     end
 
     return { items = chache.result, isIncomplete = true }
-end
-
-function source:is_available()
-    return loaded
 end
 
 function source:complete(request, callback)
