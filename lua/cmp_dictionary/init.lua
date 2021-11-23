@@ -31,8 +31,8 @@ local function tbl_len(tbl)
     return res
 end
 
-local function comp(items)
-    return items.label < items.label
+local function comp(items1, items2)
+    return items1.label < items2.label
 end
 
 local post_dic, dictionaries
