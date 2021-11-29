@@ -1,23 +1,13 @@
-local source = {}
-
-source.new = function()
-    local self = setmetatable({}, { __index = source })
-    return self
-end
-
-local f = vim.fn
-local a = vim.api
-local uv = vim.loop
-
+-- config
 if vim.g.cmp_dictionary_silent == nil then
     vim.g.cmp_dictionary_silent = true
 end
-
 if vim.g.cmp_dictionary_exact == nil then
     vim.g.cmp_dictionary_exact = 2
 end
 
-local echo = function(msg)
+-- util
+local function echo(msg)
     if not vim.g.cmp_dictionary_silent then
         print("[cmp-dictionary] " .. msg)
     end
@@ -31,8 +21,15 @@ local function tbl_len(tbl)
     return res
 end
 
-local function comp(items1, items2)
-    return items1.label < items2.label
+-- body
+local source = {}
+
+local f = vim.fn
+local a = vim.api
+local uv = vim.loop
+
+function source.new()
+    return setmetatable({}, { __index = source })
 end
 
 local post_dic, dictionaries
@@ -120,7 +117,9 @@ source.read_dictionary = function()
                 return
             end
 
-            table.sort(items, comp)
+            table.sort(items, function(item1, item2)
+                return item1.label < item2.label
+            end)
 
             local max_len = vim.g.cmp_dictionary_exact
             if max_len == -1 then
@@ -169,7 +168,7 @@ local chache = {
     result = {},
 }
 
-local get_candidate = function(req)
+local function get_candidate(req)
     local index = indexes[req]
     if not index then
         return { items = {}, isIncomplete = true }
