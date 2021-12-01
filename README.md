@@ -53,7 +53,7 @@ world !
 
 ## Update dictionary
 
-On `FileType *`, check the `dictionary` and update the dictionary if it is changed.
+On `FileType *`, check the `dictionary` and update if it is changed.
 Updating only the contents of the dictionary will not detect it.
 
 ## Use different dictionaries for each filetype
@@ -79,7 +79,16 @@ You can set `g:cmp_dictionary_exact`.
 
 ## Global options
 
-`g:cmp_dictionary_exact` decides how many characters at the beginning are used as the exact match.
+#### g:cmp_dictionary_async (boolean)
+
+If true, perform the initialization in a separate thread.
+If you are using a very large dictionary and the body operation is blocked, try this.
+
+You need module mpack. Use 0.6.0, higher or nightly. appimage may not work.
+
+#### g:cmp_dictionary_exact (integer)
+
+It decides how many characters at the beginning are used as the exact match.
 If -1, only candidates with an exact prefix match will be returns.  
 
 The default value is 2.  
@@ -88,5 +97,7 @@ The default value is 2.
 If set to -1.  
 ![image](https://user-images.githubusercontent.com/82267684/135991149-32ddd711-eeba-481b-a47c-a4e63de39921.png)
 
-`g:cmp_dictionary_silent` is a setting for whether to output debug messages.  
+#### g:cmp_dictionary_silent (boolean)
+
+It is a setting for whether to output debug messages.  
 The default value is `true`.
