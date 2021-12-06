@@ -1,13 +1,7 @@
--- config
-if vim.g.cmp_dictionary_silent == nil then
-    vim.g.cmp_dictionary_silent = true
-end
-if vim.g.cmp_dictionary_exact == nil then
-    vim.g.cmp_dictionary_exact = 2
-end
-if vim.g.cmp_dictionary_asnyc == nil then
-    vim.g.cmp_dictionary_asnyc = false
-end
+local f = vim.fn
+local a = vim.api
+local uv = vim.loop
+local ok, mpack = pcall(require, "mpack")
 
 -- util
 local function echo(msg, force)
@@ -18,11 +12,6 @@ end
 
 -- body
 local source = {}
-
-local f = vim.fn
-local a = vim.api
-local uv = vim.loop
-local ok, mpack = pcall(require, "mpack")
 
 function source.new()
     return setmetatable({}, { __index = source })
@@ -256,7 +245,7 @@ function source.update()
         if read_count == number_of_paths then
             timer:stop()
             timer:close()
-            if vim.g.cmp_dictionary_asnyc then
+            if vim.g.cmp_dictionary_async then
                 if ok then
                     echo("Run asynchronously")
                     index_async:queue(mpack.Packer()(buffers), vim.g.cmp_dictionary_exact)
