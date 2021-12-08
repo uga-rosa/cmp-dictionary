@@ -92,10 +92,10 @@ It decides how many characters at the beginning are used as the exact match.
 If -1, only candidates with an exact prefix match will be returns.  
 
 The default value is 2.  
-![image](https://user-images.githubusercontent.com/82267684/135990926-846c6289-453a-4261-aa27-612302d6a993.png)
+![image](https://user-images.githubusercontent.com/82267684/145278036-afa56b20-a365-4165-822f-98db5d7f11b1.png)
 
 If set to -1.  
-![image](https://user-images.githubusercontent.com/82267684/135991149-32ddd711-eeba-481b-a47c-a4e63de39921.png)
+![image](https://user-images.githubusercontent.com/82267684/145278316-1de264eb-86f8-4293-b20b-e3462efb2b68.png)
 
 #### g:cmp_dictionary_silent (boolean)
 
