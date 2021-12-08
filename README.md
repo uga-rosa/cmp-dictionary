@@ -79,14 +79,14 @@ You can set `g:cmp_dictionary_exact`.
 
 ## Global options
 
-#### g:cmp_dictionary_async (boolean)
+#### g:cmp_dictionary_async (boolean, default false)
 
 If true, perform the initialization in a separate thread.
 If you are using a very large dictionary and the body operation is blocked, try this.
 
-You need module mpack. Use 0.6.0, higher or nightly. appimage may not work.
+You need module mpack, so you need to build neovim of 0.6 or higher.
 
-#### g:cmp_dictionary_exact (integer)
+#### g:cmp_dictionary_exact (integer, default 2)
 
 It decides how many characters at the beginning are used as the exact match.
 If -1, only candidates with an exact prefix match will be returns.  
@@ -97,7 +97,11 @@ The default value is 2.
 If set to -1.  
 ![image](https://user-images.githubusercontent.com/82267684/145278316-1de264eb-86f8-4293-b20b-e3462efb2b68.png)
 
-#### g:cmp_dictionary_silent (boolean)
+#### g:cmp_dictionary_capacity (integer, default 5)
+
+Determines the maximum number of dictionaries to be cached.
+This will prevent duplicate reads when you switch dictionaries with the settings described above.
+
+#### g:cmp_dictionary_silent (boolean, default true)
 
 It is a setting for whether to output debug messages.  
-The default value is `true`.
