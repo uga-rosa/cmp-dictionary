@@ -53,7 +53,7 @@ If set to -1.
 If true, perform the initialization in a separate thread.
 If you are using a very large dictionary and the body operation is blocked, try this.
 
-You need module mpack, so you need to build neovim of 0.6 or higher.
+You need module mpack, so you need to install lua51-mpack or build neovim of 0.6 or higher.
 
 #### capacity (integer, default 5)
 
