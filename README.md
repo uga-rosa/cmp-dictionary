@@ -2,10 +2,9 @@
 
 Dictionary completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)  
 
-Use the dictionaries set in `dictionary` as the source for cmp.
-`:h 'dictionary'`
+## Setup
 
-## setup
+Example setting
 
 ```lua
 require("cmp").setup({
@@ -18,75 +17,27 @@ require("cmp").setup({
     },
   }
 })
+
+require("cmp_dictionary").setup({
+    dic = {
+        ["*"] = "/usr/share/dict/words",
+        ["markdown"] = { "path/to/mddict", "path/to/mddict2" },
+    },
+    -- The following are default values, so you don't need to write them if you don't want to change them
+    exact = 2,
+    async = false, 
+    capacity = 5,
+    debug = false, 
+})
 ```
 
-## Configuration
+#### dic (table, default { [*] = {} })
 
-to pick any dic with `neovim/vim` you can use `set dictionary`:
+The key is the file type, and the value is an array of dictionary paths.
+If one dictionary, you can use a string instead of an array.
+The key `*` is used as a global setting.
 
-```vim
-set dictionary+=/usr/share/dict/words
-```
-
-In lua
-
-```lua
-vim.opt.dictionary:append("/usr/share/dict/words")
-```
-
-You can download dic from [aspell.net](https://ftp.gnu.org/gnu/aspell/dict/0index.html) or installing by package manager , xbps extract to
-
-```bash
-$ ls /usr/share/dict/
-american-english  british-english  words
-```
-
-## How to create your own dictionary
-
-The dictionary is recognized as a list delimited by `\s`. `\s` is a space, `\t`, `\n`, `\r`, `\f`.
-For example, if you use the following file as a dictionary, the source to be added is `{"hello", "world", "!"}`.
-
-```txt
-hello
-world !
-```
-
-## Update dictionary
-
-On `FileType *`, check the `dictionary` and update if it is changed.
-Updating only the contents of the dictionary will not detect it.
-
-## Use different dictionaries for each filetype
-
-To set the dictionaries for each filetype, use setlocal in autocmd.
-setlocal does not pollute the global settings since it is only valid for that buffer.
-
-```vim
-augroup MyCmpDictionary
-  au!
-  au FileType markdown setlocal dictionary=/path/to/dic1,/path/to/dic2
-augroup END
-```
-
-If you want to enable or disable this source itself by filetype, use [cmp.setup.buffer](https://github.com/hrsh7th/nvim-cmp#sources-type-tablecmpsourceconfig).
-
-## FAQ
-
-#### Some candidates don't show up.
-
-Returns only candidates where the first two letters exact match by default.
-You can set `g:cmp_dictionary_exact`.
-
-## Global options
-
-#### g:cmp_dictionary_async (boolean, default false)
-
-If true, perform the initialization in a separate thread.
-If you are using a very large dictionary and the body operation is blocked, try this.
-
-You need module mpack, so you need to build neovim of 0.6 or higher.
-
-#### g:cmp_dictionary_exact (integer, default 2)
+#### exact (integer, default 2)
 
 It decides how many characters at the beginning are used as the exact match.
 If -1, only candidates with an exact prefix match will be returns.  
@@ -97,11 +48,37 @@ The default value is 2.
 If set to -1.  
 ![image](https://user-images.githubusercontent.com/82267684/145278316-1de264eb-86f8-4293-b20b-e3462efb2b68.png)
 
-#### g:cmp_dictionary_capacity (integer, default 5)
+#### async (boolean, default false)
+
+If true, perform the initialization in a separate thread.
+If you are using a very large dictionary and the body operation is blocked, try this.
+
+You need module mpack, so you need to build neovim of 0.6 or higher.
+
+#### capacity (integer, default 5)
 
 Determines the maximum number of dictionaries to be cached.
 This will prevent duplicate reads when you switch dictionaries with the settings described above.
 
-#### g:cmp_dictionary_silent (boolean, default true)
+#### debug (boolean, default false)
 
-It is a setting for whether to output debug messages.  
+If true, debug messages are output.
+
+## Where to find dictionaries
+
+You can download dic from [aspell.net](https://ftp.gnu.org/gnu/aspell/dict/0index.html) or installing by package manager, xbps extract to
+
+```bash
+$ ls /usr/share/dict/
+american-english  british-english  words
+```
+
+## How to create your own dictionary
+
+The dictionary is recognized as a list delimited by `%s`. `%s` is a space, `\t`, `\n`, `\r`, or `\f`.
+For example, if you use the following file as a dictionary, the source to be added is `{"hello", "world", "!"}`.
+
+```txt
+hello
+world !
+```

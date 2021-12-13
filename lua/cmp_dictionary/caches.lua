@@ -7,20 +7,20 @@
 ---@field now string now dictionary
 local items = {}
 
-local f = vim.fn
-local a = vim.api
+local fn = vim.fn
 local uv = vim.loop
 local lfu = require("cmp_dictionary.lfu")
+local config = require("cmp_dictionary.config")
 
 -- util
 local function echo(msg, force)
-    if force or not vim.g.cmp_dictionary_silent then
+    if force or config.get("debug") then
         print("[cmp-dictionary] " .. msg)
     end
 end
 
 -- cache
-items.cache = lfu.init(vim.g.cmp_dictionary_capacity)
+items.cache = lfu.init(config.get("capacity"))
 items.use_cache = {}
 
 ---Create dictionary data from buffers
@@ -142,11 +142,12 @@ items.create_cache_async = uv.new_work(_create_cache, function(_cache)
 end)
 
 local function check_cache(dic)
+    dic = type(dic) == "table" and dic or { dic }
     local no = {}
     local count = 0
-    for d in vim.gsplit(dic, ",") do
-        local path = f.expand(d)
-        if f.filereadable(path) == 1 then
+    for _, d in ipairs(dic) do
+        local path = fn.expand(d)
+        if fn.filereadable(path) == 1 then
             count = count + 1
             local cache = items.cache:get(path)
             if cache then
@@ -162,8 +163,13 @@ local function check_cache(dic)
 end
 
 function items.update()
-    local is_buf, d = pcall(a.nvim_buf_get_option, 0, "dictionary")
-    items.now = is_buf and d or a.nvim_get_option("dictionary")
+    if not config.is_setup() then
+        echo("The configuration method has changed, please use setup (check README for details).", true)
+        return
+    end
+
+    local dic = config.get("dic")
+    items.now = dic[vim.bo.filetype] or dic["*"]
 
     if items.now == items.post then
         echo("No change")
@@ -183,7 +189,7 @@ function items.update()
     local buffers = {}
 
     for _, path in ipairs(paths) do
-        local name = f.fnamemodify(path, ":t")
+        local name = fn.fnamemodify(path, ":t")
 
         uv.fs_open(path, "r", 438, function(err, fd)
             assert(not err, err)
@@ -206,17 +212,17 @@ function items.update()
         if #buffers == #paths then
             timer:stop()
             timer:close()
-            if vim.g.cmp_dictionary_async then
+            if config.get("async") then
                 if vim.mpack then
                     echo("Run asynchronously")
-                    items.create_cache_async:queue(vim.mpack.encode(buffers), vim.g.cmp_dictionary_exact, true)
+                    items.create_cache_async:queue(vim.mpack.encode(buffers), config.get("exact"), true)
                     return
                 else
                     echo("Module `mpack` is not available", true)
                 end
             end
             echo("Run synchronously")
-            items.create_cache_sync(buffers, vim.g.cmp_dictionary_exact)
+            items.create_cache_sync(buffers, config.get("exact"))
         end
     end)
 end

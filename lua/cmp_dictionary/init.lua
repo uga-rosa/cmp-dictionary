@@ -2,6 +2,7 @@ local source = {}
 
 local caches = require("cmp_dictionary.caches")
 local merge = require("cmp_dictionary.merge")
+local config = require("cmp_dictionary.config")
 
 function source.new()
     return setmetatable({}, { __index = source })
@@ -44,8 +45,12 @@ function source.get_candidate(req)
 end
 
 function source:complete(request, callback)
-    local req = request.context.cursor_before_line:sub(request.offset):sub(1, vim.g.cmp_dictionary_exact)
+    local req = request.context.cursor_before_line:sub(request.offset, request.offset + config.get("exact"))
     callback(source.get_candidate(req))
+end
+
+function source.setup(opt)
+    config.setup(opt)
 end
 
 return source
