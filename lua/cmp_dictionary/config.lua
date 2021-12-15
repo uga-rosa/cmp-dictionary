@@ -8,22 +8,18 @@ M.default = {
     dic = { ["*"] = {} },
 }
 M.config = {}
+M.ready = false
 
 function M.setup(opt)
-    if opt then
-        M.config = vim.tbl_deep_extend("keep", opt, M.default)
-    end
+    vim.validate({
+        opt = { opt, "table" },
+    })
+    M.config = vim.tbl_deep_extend("keep", opt, M.default)
+    M.ready = true
 end
 
 function M.get(name)
     return M.config[name]
-end
-
-function M.is_setup()
-    if vim.tbl_isempty(M.config) then
-        return false
-    end
-    return true
 end
 
 return M

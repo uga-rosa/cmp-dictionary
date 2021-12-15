@@ -163,7 +163,7 @@ local function check_cache(dic)
 end
 
 function items.update()
-    if not config.is_setup() then
+    if not config.ready then
         echo("The configuration method has changed, please use setup (check README for details).", true)
         return
     end
