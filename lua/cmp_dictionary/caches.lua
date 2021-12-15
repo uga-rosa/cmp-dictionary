@@ -6,6 +6,7 @@
 ---@field post string post dictionary
 ---@field now string now dictionary
 local items = {}
+items.post = {}
 
 local fn = vim.fn
 local uv = vim.loop
@@ -156,10 +157,37 @@ local function check_cache(dic)
                 table.insert(no, path)
             end
         else
-            echo("No such file: " .. path)
+            echo("No such file: " .. path, true)
         end
     end
     return no, count
+end
+
+local function tbl_equal(t1, t2)
+    vim.validate({
+        t1 = { t1, "table" },
+        t2 = { t2, "table" },
+    })
+
+    if t1 == t2 then
+        return true
+    end
+
+    local set = {}
+    for k1, v1 in pairs(t1) do
+        if v1 ~= t2[k1] then
+            return false
+        end
+        set[k1] = true
+    end
+
+    for k2 in pairs(t2) do
+        if not set[k2] then
+            return false
+        end
+    end
+
+    return true
 end
 
 function items.update()
@@ -171,7 +199,7 @@ function items.update()
     local dic = config.get("dic")
     items.now = dic[vim.bo.filetype] or dic["*"]
 
-    if items.now == items.post then
+    if tbl_equal(items.now, items.post) then
         echo("No change")
         return
     end
