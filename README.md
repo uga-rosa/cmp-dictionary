@@ -22,6 +22,7 @@ require("cmp_dictionary").setup({
     dic = {
         ["*"] = "/usr/share/dict/words",
         ["markdown"] = { "path/to/mddict", "path/to/mddict2" },
+        ["javascript,typescript"] = { "path/to/jsdict" },
     },
     -- The following are default values, so you don't need to write them if you don't want to change them
     exact = 2,
@@ -34,6 +35,7 @@ require("cmp_dictionary").setup({
 #### dic (table, default { [*] = {} })
 
 The key is the file type, and the value is an array of dictionary paths.
+You can also use comma-separated file types for the key.
 If one dictionary, you can use a string instead of an array.
 The key `*` is used as a global setting.
 

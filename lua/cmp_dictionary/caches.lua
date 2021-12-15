@@ -143,7 +143,6 @@ items.create_cache_async = uv.new_work(_create_cache, function(_cache)
 end)
 
 local function check_cache(dic)
-    dic = type(dic) == "table" and dic or { dic }
     local no = {}
     local count = 0
     for _, d in ipairs(dic) do
