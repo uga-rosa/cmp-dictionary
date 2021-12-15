@@ -8,5 +8,5 @@ lua require("cmp").register_source("dictionary", require("cmp_dictionary").new()
 lua require("cmp_dictionary.caches").update()
 augroup _cmp_dictionary_
     autocmd!
-    autocmd FileType * lua require("cmp_dictionary.caches").update()
+    autocmd BufEnter * lua require("cmp_dictionary.caches").update()
 augroup END

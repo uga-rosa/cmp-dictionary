@@ -3,12 +3,12 @@
 ---@class items
 ---@field cache LfuCache cached dictionary data (lfu)
 ---@field use_cache dic_data[] Currently dictionary data
----@field post string post dictionary
----@field now string now dictionary
+---@field dictionaries string[]
 local items = {}
 items.post = {}
 
 local fn = vim.fn
+local api = vim.api
 local uv = vim.loop
 local lfu = require("cmp_dictionary.lfu")
 local config = require("cmp_dictionary.config")
@@ -118,6 +118,7 @@ local function _create_cache(buffers, exact, async)
         end)
 
         new_caches[buf.path] = indexing(new_cache)
+        new_caches[buf.path].mtime = buf.mtime
     end
 
     if async then
@@ -142,80 +143,50 @@ items.create_cache_async = uv.new_work(_create_cache, function(_cache)
     echo("All dictionary loaded")
 end)
 
-local function check_cache(dic)
-    local no = {}
-    local count = 0
-    for _, d in ipairs(dic) do
-        local path = fn.expand(d)
+function items.should_update(dictionaries)
+    local updated_or_new = {}
+    for _, dic in ipairs(dictionaries) do
+        local path = fn.expand(dic)
         if fn.filereadable(path) == 1 then
-            count = count + 1
+            local mtime = fn.getftime(path)
             local cache = items.cache:get(path)
-            if cache then
+            if cache and cache.mtime == mtime then
                 table.insert(items.use_cache, cache)
             else
-                table.insert(no, path)
+                table.insert(updated_or_new, path)
             end
         else
             echo("No such file: " .. path, true)
         end
     end
-    return no, count
-end
-
-local function tbl_equal(t1, t2)
-    vim.validate({
-        t1 = { t1, "table" },
-        t2 = { t2, "table" },
-    })
-
-    if t1 == t2 then
-        return true
-    end
-
-    local set = {}
-    for k1, v1 in pairs(t1) do
-        if v1 ~= t2[k1] then
-            return false
-        end
-        set[k1] = true
-    end
-
-    for k2 in pairs(t2) do
-        if not set[k2] then
-            return false
-        end
-    end
-
-    return true
+    return updated_or_new
 end
 
 function items.update()
+    local buftype = api.nvim_buf_get_option(0, "buftype")
+    if buftype ~= "" then
+        return
+    end
+
     if not config.ready then
         echo("The configuration method has changed, please use setup (check README for details).", true)
         return
     end
 
-    local dic = config.get("dic")
-    items.now = dic[vim.bo.filetype] or dic["*"]
-
-    if tbl_equal(items.now, items.post) then
-        echo("No change")
-        return
-    end
-
-    items.post = items.now
     items.use_cache = {}
 
-    local paths, num_dic = check_cache(items.now)
+    local dic = config.get("dic")
+    items.dictionaries = dic[vim.bo.filetype] or dic["*"]
 
-    if num_dic == 0 then
-        echo("No dictionary loaded")
+    local updated_or_new = items.should_update(items.dictionaries)
+    if #updated_or_new == 0 then
+        echo("No change")
         return
     end
 
     local buffers = {}
 
-    for _, path in ipairs(paths) do
+    for _, path in ipairs(updated_or_new) do
         local name = fn.fnamemodify(path, ":t")
 
         uv.fs_open(path, "r", 438, function(err, fd)
@@ -226,7 +197,7 @@ function items.update()
                     assert(not err3, err3)
                     uv.fs_close(fd, function(err4)
                         assert(not err4, err4)
-                        table.insert(buffers, { buffer = buffer, path = path, name = name })
+                        table.insert(buffers, { buffer = buffer, path = path, name = name, mtime = stat.mtime.sec })
                         echo(path .. " are loaded")
                     end)
                 end)
@@ -236,7 +207,7 @@ function items.update()
 
     local timer = uv.new_timer()
     timer:start(0, 100, function()
-        if #buffers == #paths then
+        if #buffers == #updated_or_new then
             timer:stop()
             timer:close()
             if config.get("async") then
