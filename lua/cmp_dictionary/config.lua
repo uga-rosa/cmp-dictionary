@@ -29,6 +29,7 @@ function M.setup(opt)
 
     M.config = vim.tbl_deep_extend("keep", opt, M.default)
     M.ready = true
+    require("cmp_dictionary.caches").update()
 end
 
 function M.get(name)
