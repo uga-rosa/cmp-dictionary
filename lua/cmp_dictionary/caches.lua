@@ -144,6 +144,9 @@ items.create_cache_async = uv.new_work(_create_cache, function(_cache)
 end)
 
 function items.should_update(dictionaries)
+    if type(dictionaries) ~= "table" then
+        dictionaries = { dictionaries }
+    end
     local updated_or_new = {}
     for _, dic in ipairs(dictionaries) do
         local path = fn.expand(dic)

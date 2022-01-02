@@ -16,14 +16,11 @@ function M.setup(opt)
     })
 
     for fts, paths in pairs(opt.dic) do
-        paths = type(paths) == "table" and paths or { paths }
         if string.find(fts, ",") then
             for ft in vim.gsplit(fts, ",") do
                 opt.dic[ft] = paths
             end
             opt.dic[fts] = nil
-        else
-            opt.dic[fts] = paths
         end
     end
 
