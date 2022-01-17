@@ -3,6 +3,8 @@ name: cmp-dictionary
 on:
   push:
     branches: [main]
+    paths:
+      - "README.md"
 
 jobs:
   doc:
