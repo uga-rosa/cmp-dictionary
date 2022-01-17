@@ -5,8 +5,9 @@ Table of Contents                           *cmp-dictionary-table-of-contents*
 
 1. cmp-dictionary                              |cmp-dictionary-cmp-dictionary|
 2. Usage                                                |cmp-dictionary-usage|
-3. Where to find dictionaries      |cmp-dictionary-where-to-find-dictionaries|
-4. How to create your own dictionary|cmp-dictionary-how-to-create-your-own-dictionary|
+3. Option                                              |cmp-dictionary-option|
+4. Where to find dictionaries      |cmp-dictionary-where-to-find-dictionaries|
+5. How to create your own dictionary|cmp-dictionary-how-to-create-your-own-dictionary|
 
 ==============================================================================
 1. cmp-dictionary                              *cmp-dictionary-cmp-dictionary*
@@ -52,16 +53,18 @@ Example setting
 <
 
 
-                                        *cmp-dictionary-dic-(table,-default-)*
+==============================================================================
+3. Option                                              *cmp-dictionary-option*
 
-dic (table, default { [*] = {}, filename = nil, filepath = nil }) All but three
-                                       special keys are file types, and the
-                                       values are the corresponding dictionary
-                                       arrays. You can also use comma-separated
-                                       file types for the key. If one
-                                       dictionary, you can use a string instead
-                                       of an array.
+                                                          *cmp-dictionary-dic*
 
+dic                                    table, default: { [*] = {}, filename =
+                                       nil, filepath = nil }
+
+
+All but three special keys are file types, and the values are the corresponding
+dictionary arrays. You can also use comma-separated file types for the key. If
+one dictionary, you can use a string instead of an array.
 
 The special key `filename` takes a table as its value, which has keys of file
 names and values of corresponding dictionary array. The keys are used in exact
@@ -75,13 +78,13 @@ The special key `*` is a global setting.
 
 The priority is `filename` > `filepath` > `filetype` > `*`
 
-                                   *cmp-dictionary-exact-(integer,-default-2)*
+                                                        *cmp-dictionary-exact*
 
-exact (integer, default 2)             It decides how many characters at the
-                                       beginning are used as the exact match.
-                                       If -1, only candidates with an exact
-                                       prefix match will be returns.
+exact                                  integer, default: 2
 
+
+It decides how many characters at the beginning are used as the exact match. If
+-1, only candidates with an exact prefix match will be returns.
 
 The default value is 2.<br/><img
 src='https://user-images.githubusercontent.com/82267684/145278036-afa56b20-a365-4165-822f-98db5d7f11b1.png'
@@ -91,44 +94,44 @@ If set to -1.<br/><img
 src='https://user-images.githubusercontent.com/82267684/145278316-1de264eb-86f8-4293-b20b-e3462efb2b68.png'
 title=''/>
 
-              *cmp-dictionary-first_case_insensitive-(boolean,-default-false)*
+                                       *cmp-dictionary-first_case_insensitive*
 
-first_case_insensitive (boolean, default false) If true, it will ignore the
-                                       case of the first character. For
-                                       example, if you have "Example" and
-                                       "excuse" in your dictionary, typing "Ex"
-                                       will bring up "Example" and "Excuse" as
-                                       candidates, while typing "ex" will bring
-                                       up "example" and "excuse".
+first_case_insensitive                 boolean, default: false
 
 
-                               *cmp-dictionary-async-(boolean,-default-false)*
+If true, it will ignore the case of the first character. For example, if you
+have "Example" and "excuse" in your dictionary, typing "Ex" will bring up
+"Example" and "Excuse" as candidates, while typing "ex" will bring up "example"
+and "excuse".
 
-async (boolean, default false)         If true, perform the initialization in a
-                                       separate thread. If you are using a very
-                                       large dictionary and the body operation
-                                       is blocked, try this.
+                                                        *cmp-dictionary-async*
 
+async                                  boolean default: false
+
+
+If true, perform the initialization in a separate thread. If you are using a
+very large dictionary and the body operation is blocked, try this.
 
 You need module mpack, so you need to install lua51-mpack or build neovim of
 0.6 or higher.
 
-                                *cmp-dictionary-capacity-(integer,-default-5)*
+                                                     *cmp-dictionary-capacity*
 
-capacity (integer, default 5)          Determines the maximum number of
-                                       dictionaries to be cached. This will
-                                       prevent duplicate reads when you switch
-                                       dictionaries with the settings described
-                                       above.
+capacity                               integer, default 5
 
 
-                               *cmp-dictionary-debug-(boolean,-default-false)*
+Determines the maximum number of dictionaries to be cached. This will prevent
+duplicate reads when you switch dictionaries with the settings described above.
 
-debug (boolean, default false)         If true, debug messages are output.
+                                                        *cmp-dictionary-debug*
 
+debug                                  boolean, default false
+
+
+If true, debug messages are output.
 
 ==============================================================================
-3. Where to find dictionaries      *cmp-dictionary-where-to-find-dictionaries*
+4. Where to find dictionaries      *cmp-dictionary-where-to-find-dictionaries*
 
 You can download dic from aspell.net
 <https://ftp.gnu.org/gnu/aspell/dict/0index.html> or installing by package
@@ -149,7 +152,7 @@ dic for this plugin (plain text).
 
 
 ==============================================================================
-4. How to create your own dictionary*cmp-dictionary-how-to-create-your-own-dictionary*
+5. How to create your own dictionary*cmp-dictionary-how-to-create-your-own-dictionary*
 
 The dictionary is recognized as a list delimited by `%s`. `%s` is a space,
 `\t`, `\n`, `\r`, or `\f`. For example, if you use the following file as a
