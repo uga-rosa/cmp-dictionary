@@ -15,6 +15,7 @@ jobs:
         with:
           vimdoc: cmp-dictionary
           pandoc: README.md
+          description: Dictionary completion source for nvim-cmp
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "Auto generate docs"
