@@ -2,7 +2,7 @@
 
 Dictionary completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)  
 
-## Setup
+# Usage
 
 Example setting
 
@@ -88,7 +88,7 @@ This will prevent duplicate reads when you switch dictionaries with the settings
 
 If true, debug messages are output.
 
-## Where to find dictionaries
+# Where to find dictionaries
 
 You can download dic from [aspell.net](https://ftp.gnu.org/gnu/aspell/dict/0index.html) or installing by package manager, xbps extract to
 
@@ -103,7 +103,7 @@ After installing aspell and dictionary you want, run following command to get di
 aspell -d <lang> dump master | aspell -l <lang> expand > my.dict
 ```
 
-## How to create your own dictionary
+# How to create your own dictionary
 
 The dictionary is recognized as a list delimited by `%s`. `%s` is a space, `\t`, `\n`, `\r`, or `\f`.
 For example, if you use the following file as a dictionary, the source to be added is `{"hello", "world", "!"}`.
