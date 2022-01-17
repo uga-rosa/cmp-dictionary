@@ -32,6 +32,7 @@ require("cmp_dictionary").setup({
     },
     -- The following are default values, so you don't need to write them if you don't want to change them
     exact = 2,
+    first_case_insensitive = false,
     async = false, 
     capacity = 5,
     debug = false, 
@@ -64,6 +65,12 @@ The default value is 2.
 
 If set to -1.  
 ![image](https://user-images.githubusercontent.com/82267684/145278316-1de264eb-86f8-4293-b20b-e3462efb2b68.png)
+
+#### first_case_insensitive (boolean, default false)
+
+If true, it will ignore the case of the first character.
+For example, if you have "Example" and "excuse" in your dictionary, typing "Ex" will bring up "Example" and "Excuse" as candidates,
+while typing "ex" will bring up "example" and "excuse".
 
 #### async (boolean, default false)
 

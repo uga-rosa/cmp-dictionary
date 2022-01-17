@@ -16,17 +16,54 @@ local candidate_cache = {
     result = {},
 }
 
-function source.get_candidate(req)
-    if candidate_cache.req == req then
-        return { items = candidate_cache.result, isIncomplete = true }
-    end
+local function is_capital(str)
+    return str:find("^%u") and true or false
+end
 
+local function to_lower_first(str)
+    local l = str:gsub("^.", string.lower)
+    return l
+end
+
+local function to_upper_first(str)
+    local u = str:gsub("^.", string.upper)
+    return u
+end
+
+local function get_from_caches(req)
     local result = {}
     for _, cache in pairs(caches.get()) do
         local index = cache.index[req]
         if index then
             for i = index.start, index.last do
-                table.insert(result, cache.item[i])
+                local item = cache.item[i]
+                item.label = item._label or item.label
+                table.insert(result, item)
+            end
+        end
+    end
+    return result
+end
+
+function source.get_candidate(req)
+    if candidate_cache.req == req then
+        return { items = candidate_cache.result, isIncomplete = true }
+    end
+
+    local result = get_from_caches(req)
+
+    if config.get("first_case_insensitive") then
+        if is_capital(req) then
+            for _, item in ipairs(get_from_caches(to_lower_first(req))) do
+                item._label = item._label or item.label
+                item.label = to_upper_first(item._label)
+                table.insert(result, item)
+            end
+        else
+            for _, item in ipairs(get_from_caches(to_upper_first(req))) do
+                item._label = item._label or item.label
+                item.label = to_lower_first(item._label)
+                table.insert(result, item)
             end
         end
     end

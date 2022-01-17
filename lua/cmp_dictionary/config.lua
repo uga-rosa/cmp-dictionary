@@ -2,6 +2,7 @@ local M = {}
 
 M.default = {
     exact = 2,
+    first_case_insensitive = false,
     async = false,
     capacity = 5,
     debug = false,
