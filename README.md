@@ -75,6 +75,12 @@ $ ls /usr/share/dict/
 american-english  british-english  words
 ```
 
+After installing aspell and dictionary you want, run following command to get dic for this plugin (plain text).
+
+```bash
+aspell -d <lang> dump master | aspell -l <lang> expand > my.dict
+```
+
 ## How to create your own dictionary
 
 The dictionary is recognized as a list delimited by `%s`. `%s` is a space, `\t`, `\n`, `\r`, or `\f`.
