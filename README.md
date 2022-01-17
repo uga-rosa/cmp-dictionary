@@ -20,9 +20,15 @@ require("cmp").setup({
 
 require("cmp_dictionary").setup({
     dic = {
-        ["*"] = "/usr/share/dict/words",
-        ["markdown"] = { "path/to/mddict", "path/to/mddict2" },
-        ["javascript,typescript"] = { "path/to/jsdict" },
+        ["*"] = { "/usr/share/dict/words" },
+        ["lua"] = "path/to/lua.dic",
+        ["javascript,typescript"] = { "path/to/js.dic", "path/to/js2.dic" },
+        filename = {
+            ["xmake.lua"] = { "path/to/xmake.dic", "path/to/lua.dic" },
+        },
+        filepath = {
+            ["%.tmux.*%.conf"] = "path/to/tmux.dic"
+        },
     },
     -- The following are default values, so you don't need to write them if you don't want to change them
     exact = 2,
@@ -32,12 +38,21 @@ require("cmp_dictionary").setup({
 })
 ```
 
-#### dic (table, default { [*] = {} })
+#### dic (table, default { [*] = {}, filename = nil, filepath = nil })
 
-The key is the file type, and the value is an array of dictionary paths.
+All but three special keys are file types, and the values are the corresponding dictionary arrays.
 You can also use comma-separated file types for the key.
 If one dictionary, you can use a string instead of an array.
-The key `*` is used as a global setting.
+
+The special key `filename` takes a table as its value, which has keys of file names and values of corresponding dictionary array.
+The keys are used in exact match with the result of `expand("%:t")`.
+
+The special key `filepath` is a table in a format similar to filename.
+The difference is that the keys are lua patterns and are used to match `expand("%:p")`.
+
+The special key `*` is a global setting.
+
+The priority is `filename` > `filepath` > `filetype` > `*`
 
 #### exact (integer, default 2)
 

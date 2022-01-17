@@ -5,7 +5,11 @@ M.default = {
     async = false,
     capacity = 5,
     debug = false,
-    dic = { ["*"] = {} },
+    dic = {
+        ["*"] = {},
+        filename = nil,
+        filepath = nil,
+    },
 }
 M.config = {}
 M.ready = false

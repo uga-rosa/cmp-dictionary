@@ -3,7 +3,6 @@
 ---@class items
 ---@field cache LfuCache cached dictionary data (lfu)
 ---@field use_cache dic_data[] Currently dictionary data
----@field dictionaries string[]
 local items = {}
 items.post = {}
 
@@ -177,11 +176,26 @@ function items.update()
     end
 
     items.use_cache = {}
+    local dictionaries
 
     local dic = config.get("dic")
-    items.dictionaries = dic[vim.bo.filetype] or dic["*"]
+    if dic.filename then
+        local filename = vim.fn.expand("%:t")
+        dictionaries = dic.filename[filename]
+    end
+    if dic.filepath and not dictionaries then
+        local filepath = vim.fn.expand("%:p")
+        for path, dict in pairs(dic.filepath) do
+            if filepath:find(path) then
+                dictionaries = dict
+            end
+        end
+    end
+    if not dictionaries then
+        dictionaries = dic[vim.bo.filetype] or dic["*"]
+    end
 
-    local updated_or_new = items.should_update(items.dictionaries)
+    local updated_or_new = items.should_update(dictionaries)
     if #updated_or_new == 0 then
         echo("No change")
         return
