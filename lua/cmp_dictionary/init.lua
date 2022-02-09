@@ -83,4 +83,8 @@ function source.setup(opt)
     config.setup(opt)
 end
 
+function source.update()
+    caches.update()
+end
+
 return source

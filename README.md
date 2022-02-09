@@ -126,3 +126,32 @@ For example, if you use the following file as a dictionary, the source to be add
 hello
 world !
 ```
+
+# I want to use lazy loading
+
+By default, reading dictionaries are fired by `BufEnter`.
+So if this plugin loading is set to `InsertEnter` or something, the dictionary will not load and no candidates will appear.
+The workaround is to fire this update yourself when the plugin is loaded (after setup).
+
+For example, if you use packer.nvim, you can use
+
+```lua
+use({
+    "hrsh7th/nvim-cmp",
+    event = "InsertEnter",
+    -- other setting
+})
+use({
+    "uga-rosa/cmp-dictionary",
+    after = "nvim-cmp",
+    config = function()
+        require("cmp_dictionary").setup({
+            dic = {
+                ["*"] = "/usr/share/dict/words",
+            },
+            first_case_insensitive = true,
+        })
+        require("cmp_dictionary").update() -- THIS
+    end
+})
+```
