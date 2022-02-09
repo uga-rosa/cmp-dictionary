@@ -171,7 +171,7 @@ function items.update()
     end
 
     if not config.ready then
-        echo("The configuration method has changed, please use setup (check README for details).", true)
+        echo("Setup has NOT been called.", true)
         return
     end
 
