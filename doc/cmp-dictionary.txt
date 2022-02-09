@@ -8,6 +8,7 @@ Table of Contents                           *cmp-dictionary-table-of-contents*
 3. Option                                              |cmp-dictionary-option|
 4. Where to find dictionaries      |cmp-dictionary-where-to-find-dictionaries|
 5. How to create your own dictionary|cmp-dictionary-how-to-create-your-own-dictionary|
+6. I want to use lazy loading      |cmp-dictionary-i-want-to-use-lazy-loading|
 
 ==============================================================================
 1. cmp-dictionary                              *cmp-dictionary-cmp-dictionary*
@@ -161,6 +162,38 @@ dictionary, the source to be added is `{"hello", "world", "!"}`.
 >
     hello
     world !
+<
+
+
+==============================================================================
+6. I want to use lazy loading      *cmp-dictionary-i-want-to-use-lazy-loading*
+
+By default, reading dictionaries are fired by `BufEnter`. So if this plugin
+loading is set to `InsertEnter` or something, the dictionary will not load and
+no candidates will appear. The workaround is to fire this update yourself when
+the plugin is loaded (after setup).
+
+For example, if you use packer.nvim, you can use
+
+>
+    use({
+        "hrsh7th/nvim-cmp",
+        event = "InsertEnter",
+        -- other setting
+    })
+    use({
+        "uga-rosa/cmp-dictionary",
+        after = "nvim-cmp",
+        config = function()
+            require("cmp_dictionary").setup({
+                dic = {
+                    ["*"] = "/usr/share/dict/words",
+                },
+                first_case_insensitive = true,
+            })
+            require("cmp_dictionary").update() -- THIS
+        end
+    })
 <
 
 
