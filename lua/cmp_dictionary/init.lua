@@ -45,9 +45,9 @@ local function get_from_caches(req)
     return result
 end
 
-function source.get_candidate(req)
+function source.get_candidate(req, isIncomplete)
     if candidate_cache.req == req then
-        return { items = candidate_cache.result, isIncomplete = true }
+        return { items = candidate_cache.result, isIncomplete = isIncomplete }
     end
 
     local result = get_from_caches(req)
@@ -71,12 +71,14 @@ function source.get_candidate(req)
     candidate_cache.req = req
     candidate_cache.result = result
 
-    return { items = result, isIncomplete = true }
+    return { items = result, isIncomplete = isIncomplete }
 end
 
 function source:complete(request, callback)
-    local req = request.context.cursor_before_line:sub(request.offset, request.offset + config.get("exact"))
-    callback(source.get_candidate(req))
+    local exact = config.get("exact")
+    local req = request.context.cursor_before_line:sub(request.offset, request.offset + exact - 1)
+    local isIncomplete = #req < exact
+    callback(source.get_candidate(req, isIncomplete))
 end
 
 function source.setup(opt)
