@@ -33,6 +33,8 @@ require("cmp_dictionary").setup({
     -- The following are default values, so you don't need to write them if you don't want to change them
     exact = 2,
     first_case_insensitive = false,
+    document = false,
+    document_command = "wn %s -over",
     async = false, 
     capacity = 5,
     debug = false,
@@ -79,6 +81,20 @@ boolean, default: false
 If true, it will ignore the case of the first character.
 For example, if you have "Example" and "excuse" in your dictionary, typing "Ex" will bring up "Example" and "Excuse" as candidates,
 while typing "ex" will bring up "example" and "excuse".
+
+#### document
+
+boolean, default: false
+
+If true, activate document using external command. See [document_command](#document_command)
+
+#### document_command
+
+string, default: 'wn %s -over'
+
+This command is used above document feature.
+The `%s` will contain the candidate word.
+The default `wn` command is [wordnet](https://wordnet.princeton.edu/)
 
 #### async
 
