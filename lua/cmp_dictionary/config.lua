@@ -1,16 +1,16 @@
 local M = {}
 
 M.default = {
-    exact = 2,
-    first_case_insensitive = false,
-    async = false,
-    capacity = 5,
-    debug = false,
     dic = {
         ["*"] = {},
         filename = nil,
         filepath = nil,
     },
+    exact = 2,
+    first_case_insensitive = false,
+    async = false,
+    capacity = 5,
+    debug = false,
 }
 M.config = {}
 M.ready = false

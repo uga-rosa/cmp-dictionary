@@ -12,10 +12,16 @@ local uv = vim.loop
 local lfu = require("cmp_dictionary.lfu")
 local config = require("cmp_dictionary.config")
 
--- util
-local function echo(msg, force)
-    if force or config.get("debug") then
-        print("[cmp-dictionary] " .. msg)
+local function log(...)
+    if config.get("debug") then
+        local msg = {}
+        for _, v in ipairs({...}) do
+            if type(v) == "table" then
+                v = vim.inspect(v)
+            end
+            table.insert(msg, v)
+        end
+        print("[cmp-dictionary]", table.concat(msg, "\t"))
     end
 end
 
@@ -127,22 +133,27 @@ local function _create_cache(buffers, exact, async)
 end
 
 function items.create_cache_sync(buffers, exact)
+    local paths = {}
     for path, cache in pairs(_create_cache(buffers, exact, false)) do
         items.cache:set(path, cache)
         table.insert(items.use_cache, cache)
+        table.insert(paths, path)
     end
-    echo("All dictionary loaded")
+    log("All dictionary loaded", paths)
 end
 
 items.create_cache_async = uv.new_work(_create_cache, function(_cache)
+    local paths = {}
     for path, cache in pairs(vim.mpack.decode(_cache)) do
         items.cache:set(path, cache)
         table.insert(items.use_cache, cache)
+        table.insert(paths, path)
     end
-    echo("All dictionary loaded")
+    log("All dictionary loaded", paths)
 end)
 
 function items.should_update(dictionaries)
+    log("check to need to load >>>")
     if type(dictionaries) ~= "table" then
         dictionaries = { dictionaries }
     end
@@ -154,13 +165,16 @@ function items.should_update(dictionaries)
             local cache = items.cache:get(path)
             if cache and cache.mtime == mtime then
                 table.insert(items.use_cache, cache)
+                log("This file is cached: " .. path)
             else
                 table.insert(updated_or_new, path)
+                log("This file needs to be loaded: " .. path)
             end
         else
-            echo("No such file: " .. path, true)
+            log("No such file: " .. path)
         end
     end
+    log("<<<")
     return updated_or_new
 end
 
@@ -171,7 +185,7 @@ function items.update()
     end
 
     if not config.ready then
-        echo("Setup has NOT been called.", true)
+        log("Setup has NOT been called.")
         return
     end
 
@@ -195,9 +209,10 @@ function items.update()
         dictionaries = dic[vim.bo.filetype] or dic["*"]
     end
 
+    log("Dictionaries for the current buffer:", dictionaries)
+
     local updated_or_new = items.should_update(dictionaries)
     if #updated_or_new == 0 then
-        echo("No change")
         return
     end
 
@@ -215,7 +230,7 @@ function items.update()
                     uv.fs_close(fd, function(err4)
                         assert(not err4, err4)
                         table.insert(buffers, { buffer = buffer, path = path, name = name, mtime = stat.mtime.sec })
-                        echo(path .. " are loaded")
+                        log(("`%s` are loaded"):format(path))
                     end)
                 end)
             end)
@@ -229,14 +244,14 @@ function items.update()
             timer:close()
             if config.get("async") then
                 if vim.mpack then
-                    echo("Run asynchronously")
+                    log("Run asynchronously")
                     items.create_cache_async:queue(vim.mpack.encode(buffers), config.get("exact"), true)
                     return
                 else
-                    echo("Module `mpack` is not available", true)
+                    log("Module `mpack` is not available")
                 end
             end
-            echo("Run synchronously")
+            log("Run synchronously")
             items.create_cache_sync(buffers, config.get("exact"))
         end
     end)

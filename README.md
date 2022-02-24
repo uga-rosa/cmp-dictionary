@@ -35,7 +35,7 @@ require("cmp_dictionary").setup({
     first_case_insensitive = false,
     async = false, 
     capacity = 5,
-    debug = false, 
+    debug = false,
 })
 ```
 
@@ -91,14 +91,14 @@ You need module mpack, so you need to install lua51-mpack or build neovim of 0.6
 
 #### capacity
 
-integer, default 5
+integer, default: 5
 
 Determines the maximum number of dictionaries to be cached.
 This will prevent duplicate reads when you switch dictionaries with the settings described above.
 
 #### debug
 
-boolean, default false
+boolean, default: false
 
 If true, debug messages are output.
 
