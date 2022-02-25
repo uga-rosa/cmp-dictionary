@@ -6,9 +6,9 @@ Table of Contents                           *cmp-dictionary-table-of-contents*
 1. cmp-dictionary                              |cmp-dictionary-cmp-dictionary|
 2. Usage                                                |cmp-dictionary-usage|
 3. Option                                              |cmp-dictionary-option|
-4. Where to find dictionaries      |cmp-dictionary-where-to-find-dictionaries|
-5. How to create your own dictionary|cmp-dictionary-how-to-create-your-own-dictionary|
-6. Lazy load                                        |cmp-dictionary-lazy-load|
+4. Find dictionaries                        |cmp-dictionary-find-dictionaries|
+5. Create dictionaries                    |cmp-dictionary-create-dictionaries|
+6. Lazy loading                                  |cmp-dictionary-lazy-loading|
 
 ==============================================================================
 1. cmp-dictionary                              *cmp-dictionary-cmp-dictionary*
@@ -61,29 +61,29 @@ Example setting
 
                                                           *cmp-dictionary-dic*
 
-dic                                    table, default: { [*] = {}, filename =
-                                       nil, filepath = nil }
+dic                                    table (default: { [*] = {}, filename =
+                                       nil, filepath = nil })
 
 
 All but three special keys are file types, and the values are the corresponding
 dictionary arrays. You can also use comma-separated file types for the key. If
 one dictionary, you can use a string instead of an array.
 
-The special key `filename` takes a table as its value, which has keys of file
+The special key 'filename' takes a table as its value, which has keys of file
 names and values of corresponding dictionary array. The keys are used in exact
-match with the result of `expand("%:t")`.
+match with the result of '`expand`("%:t")'.
 
-The special key `filepath` is a table in a format similar to filename. The
+The special key 'filepath' is a table in a format similar to filename. The
 difference is that the keys are lua patterns and are used to match
-`expand("%:p")`.
+'`expand`("%:p")'.
 
-The special key `*` is a global setting.
+The special key ’*’ is a global setting.
 
-The priority is `filename` > `filepath` > `filetype` > `*`
+The priority is 'filename' > 'filepath' > 'filetype' > ’*’
 
                                                         *cmp-dictionary-exact*
 
-exact                                  integer, default: 2
+exact                                  integer (default: 2)
 
 
 It decides how many characters at the beginning are used as the exact match. If
@@ -91,7 +91,7 @@ It decides how many characters at the beginning are used as the exact match. If
 
                                        *cmp-dictionary-first_case_insensitive*
 
-first_case_insensitive                 boolean, default: false
+first_case_insensitive                 boolean (default: false)
 
 
 If true, it will ignore the case of the first character. For example, if you
@@ -101,7 +101,7 @@ and "excuse".
 
                                                      *cmp-dictionary-document*
 
-document                               boolean, default: false
+document                               boolean (default: false)
 
 
 If true, activate document using external command. See
@@ -109,16 +109,16 @@ If true, activate document using external command. See
 
                                              *cmp-dictionary-document_command*
 
-document_command                       string, default: 'wn %s -over'
+document_command                       string (default: 'wn %s -over')
 
 
-This command is used above document feature. The `%s` will contain the
-candidate word. The default `wn` command is wordnet
+This command is used above document feature. The '%s' will contain the
+candidate word. The default 'wn' command is wordnet
 <https://wordnet.princeton.edu/>
 
                                                         *cmp-dictionary-async*
 
-async                                  boolean default: false
+async                                  boolean (default: false)
 
 
 If true, perform the initialization in a separate thread. If you are using a
@@ -129,7 +129,7 @@ You need module mpack, so you need to install lua51-mpack or build neovim of
 
                                                      *cmp-dictionary-capacity*
 
-capacity                               integer, default: 5
+capacity                               integer (default: 5)
 
 
 Determines the maximum number of dictionaries to be cached. This will prevent
@@ -137,13 +137,13 @@ duplicate reads when you switch dictionaries with the settings described above.
 
                                                         *cmp-dictionary-debug*
 
-debug                                  boolean, default: false
+debug                                  boolean (default: false)
 
 
 If true, debug messages are output.
 
 ==============================================================================
-4. Where to find dictionaries      *cmp-dictionary-where-to-find-dictionaries*
+4. Find dictionaries                        *cmp-dictionary-find-dictionaries*
 
 You can download dic from aspell.net
 <https://ftp.gnu.org/gnu/aspell/dict/0index.html> or installing by package
@@ -164,11 +164,11 @@ dic for this plugin (plain text).
 
 
 ==============================================================================
-5. How to create your own dictionary*cmp-dictionary-how-to-create-your-own-dictionary*
+5. Create dictionaries                    *cmp-dictionary-create-dictionaries*
 
-The dictionary is recognized as a list delimited by `%s`. `%s` is a space,
-`\t`, `\n`, `\r`, or `\f`. For example, if you use the following file as a
-dictionary, the source to be added is `{"hello", "world", "!"}`.
+The dictionary is recognized as a list delimited by '%s'. '%s' is a space,
+','',', or '. For example, if you use the following file as a dictionary, the
+source to be added is'{"hello", "world", "!"}’.
 
 >
     hello
@@ -177,7 +177,7 @@ dictionary, the source to be added is `{"hello", "world", "!"}`.
 
 
 ==============================================================================
-6. Lazy load                                        *cmp-dictionary-lazy-load*
+6. Lazy loading                                  *cmp-dictionary-lazy-loading*
 
 By default, reading dictionaries are fired by `BufEnter`. So if this plugin
 loading is set to `InsertEnter` or something, the dictionary will not load and
