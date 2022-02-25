@@ -1,5 +1,8 @@
 local source = {}
 
+local cmp = require("cmp")
+local luv = vim.loop
+
 local caches = require("cmp_dictionary.caches")
 local config = require("cmp_dictionary.config")
 
@@ -79,6 +82,73 @@ function source:complete(request, callback)
     local req = request.context.cursor_before_line:sub(request.offset, request.offset + exact - 1)
     local isIncomplete = #req < exact
     callback(source.get_candidate(req, isIncomplete))
+end
+
+local document_cache = require("cmp_dictionary.lfu").init(100)
+
+local function _parse_command(cmd)
+    local args = vim.split(cmd, " ")
+    cmd = table.remove(args, 1)
+    return cmd, args
+end
+
+local function pipes()
+    local stdin = luv.new_pipe(false)
+    local stdout = luv.new_pipe(false)
+    local stderr = luv.new_pipe(false)
+    return { stdin, stdout, stderr }
+end
+
+local function get_document(completion_item, callback)
+    local word = completion_item.label
+    local command = string.format(config.get("document_command"), word)
+    local cmd, args = _parse_command(command)
+    local stdio = pipes()
+    local spawn_options = {
+        args = args,
+        stdio = stdio,
+    }
+
+    local handle
+    handle = luv.spawn(cmd, spawn_options, function()
+        stdio[1]:close()
+        stdio[2]:close()
+        stdio[3]:close()
+        handle:close()
+    end)
+
+    if not handle then
+        callback(completion_item)
+        return
+    end
+
+    luv.read_start(stdio[2], function(err, result)
+        assert(not err, err)
+        result = result or ""
+        document_cache:set(word, result)
+        completion_item.documentation = {
+            kind = cmp.lsp.MarkupKind.PlainText,
+            value = result,
+        }
+        callback(completion_item)
+    end)
+end
+
+function source:resolve(completion_item, callback)
+    if config.get("document") then
+        local cached = document_cache:get(completion_item.label)
+        if cached then
+            completion_item.documentation = {
+                kind = cmp.lsp.MarkupKind.PlainText,
+                value = cached,
+            }
+            callback(completion_item)
+        else
+            get_document(completion_item, callback)
+        end
+    else
+        callback(completion_item)
+    end
 end
 
 function source.setup(opt)
