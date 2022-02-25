@@ -52,10 +52,10 @@ You can also use comma-separated file types for the key.
 If one dictionary, you can use a string instead of an array.
 
 The special key 'filename' takes a table as its value, which has keys of file names and values of corresponding dictionary array.
-The keys are used in exact match with the result of '`expand`("%:t")'.
+The keys are used in exact match with the result of |expand|('%:t').
 
 The special key 'filepath' is a table in a format similar to filename.
-The difference is that the keys are lua patterns and are used to match '`expand`("%:p")'.
+The difference is that the keys are lua patterns and are used to match |expand|('%:p').
 
 The special key '*' is a global setting.
 
