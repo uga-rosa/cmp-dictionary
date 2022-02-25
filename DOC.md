@@ -45,32 +45,32 @@ require("cmp_dictionary").setup({
 
 #### dic
 
-table, default: { [*] = {}, filename = nil, filepath = nil }
+table (default: { [*] = {}, filename = nil, filepath = nil })
 
 All but three special keys are file types, and the values are the corresponding dictionary arrays.
 You can also use comma-separated file types for the key.
 If one dictionary, you can use a string instead of an array.
 
-The special key `filename` takes a table as its value, which has keys of file names and values of corresponding dictionary array.
-The keys are used in exact match with the result of `expand("%:t")`.
+The special key 'filename' takes a table as its value, which has keys of file names and values of corresponding dictionary array.
+The keys are used in exact match with the result of '`expand`("%:t")'.
 
-The special key `filepath` is a table in a format similar to filename.
-The difference is that the keys are lua patterns and are used to match `expand("%:p")`.
+The special key 'filepath' is a table in a format similar to filename.
+The difference is that the keys are lua patterns and are used to match '`expand`("%:p")'.
 
-The special key `*` is a global setting.
+The special key '*' is a global setting.
 
-The priority is `filename` > `filepath` > `filetype` > `*`
+The priority is 'filename' > 'filepath' > 'filetype' > '*'
 
 #### exact
 
-integer, default: 2
+integer (default: 2)
 
 It decides how many characters at the beginning are used as the exact match.
 If -1, only candidates with an exact prefix match will be returns.  
 
 #### first_case_insensitive
 
-boolean, default: false
+boolean (default: false)
 
 If true, it will ignore the case of the first character.
 For example, if you have "Example" and "excuse" in your dictionary, typing "Ex" will bring up "Example" and "Excuse" as candidates,
@@ -78,21 +78,21 @@ while typing "ex" will bring up "example" and "excuse".
 
 #### document
 
-boolean, default: false
+boolean (default: false)
 
 If true, activate document using external command. See [document_command](#document_command)
 
 #### document_command
 
-string, default: 'wn %s -over'
+string (default: 'wn %s -over')
 
 This command is used above document feature.
-The `%s` will contain the candidate word.
-The default `wn` command is [wordnet](https://wordnet.princeton.edu/)
+The '%s' will contain the candidate word.
+The default 'wn' command is [wordnet](https://wordnet.princeton.edu/)
 
 #### async
 
-boolean default: false
+boolean (default: false)
 
 If true, perform the initialization in a separate thread.
 If you are using a very large dictionary and the body operation is blocked, try this.
@@ -101,18 +101,18 @@ You need module mpack, so you need to install lua51-mpack or build neovim of 0.6
 
 #### capacity
 
-integer, default: 5
+integer (default: 5)
 
 Determines the maximum number of dictionaries to be cached.
 This will prevent duplicate reads when you switch dictionaries with the settings described above.
 
 #### debug
 
-boolean, default: false
+boolean (default: false)
 
 If true, debug messages are output.
 
-# Where to find dictionaries
+# Find dictionaries
 
 You can download dic from [aspell.net](https://ftp.gnu.org/gnu/aspell/dict/0index.html) or installing by package manager, xbps extract to
 
@@ -127,17 +127,17 @@ After installing aspell and dictionary you want, run following command to get di
 aspell -d <lang> dump master | aspell -l <lang> expand > my.dict
 ```
 
-# How to create your own dictionary
+# Create dictionaries
 
-The dictionary is recognized as a list delimited by `%s`. `%s` is a space, `\t`, `\n`, `\r`, or `\f`.
-For example, if you use the following file as a dictionary, the source to be added is `{"hello", "world", "!"}`.
+The dictionary is recognized as a list delimited by '%s'. '%s' is a space, '\t', '\n', '\r', or '\f'.
+For example, if you use the following file as a dictionary, the source to be added is '{"hello", "world", "!"}'.
 
 ```txt
 hello
 world !
 ```
 
-# Lazy load
+# Lazy loading
 
 By default, reading dictionaries are fired by `BufEnter`.
 So if this plugin loading is set to `InsertEnter` or something, the dictionary will not load and no candidates will appear.
