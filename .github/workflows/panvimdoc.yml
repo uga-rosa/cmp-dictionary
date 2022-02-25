@@ -4,19 +4,19 @@ on:
   push:
     branches: [main]
     paths:
-      - "README.md"
+      - "DOC.md"
 
 jobs:
   doc:
     runs-on: ubuntu-latest
-    name: readme to vimdoc
+    name: markdown to vimdoc
     steps:
       - uses: actions/checkout@v2
       - name: panvimdoc
         uses: kdheepak/panvimdoc@main
         with:
           vimdoc: cmp-dictionary
-          pandoc: README.md
+          pandoc: DOC.md
           description: Dictionary completion source for nvim-cmp
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
