@@ -84,11 +84,17 @@ If true, activate document using external command. See [document_command](#docum
 
 #### document_command
 
-string (default: 'wn %s -over')
+string or list-like table (default: 'wn %s -over')
 
 This command is used above document feature.
 The '%s' will contain the candidate word.
 The default 'wn' command is [wordnet](https://wordnet.princeton.edu/)
+
+If a string, the arguments are recognized by separating it with a space character.
+If you don't want that, use a table.
+
+If a table, the first element is the command and the second and subsequent are the arguments.
+For example, the default setting would be '{"wn", "%s", "-over"}'.
 
 #### async
 

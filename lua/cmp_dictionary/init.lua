@@ -86,9 +86,27 @@ end
 
 local document_cache = require("cmp_dictionary.lfu").init(100)
 
-local function _parse_command(cmd)
-    local args = vim.split(cmd, " ")
-    cmd = table.remove(args, 1)
+local function get_command(word)
+    local command = config.get("document_command")
+
+    local args
+    if type(command) == "table" then
+        -- copy
+        args = {}
+        for i, v in ipairs(command) do
+            args[i] = v
+        end
+    elseif type(command) == "string" then
+        args = vim.split(command, " ")
+    end
+
+    local cmd = table.remove(args, 1)
+    for i, arg in ipairs(args) do
+        if arg:find("%s", 1, true) then
+            args[i] = arg:format(word)
+        end
+    end
+
     return cmd, args
 end
 
@@ -101,8 +119,12 @@ end
 
 local function get_document(completion_item, callback)
     local word = completion_item.label
-    local command = string.format(config.get("document_command"), word)
-    local cmd, args = _parse_command(command)
+    local cmd, args = get_command(word)
+    if not cmd then
+        callback(completion_item)
+        return
+    end
+
     local stdio = pipes()
     local spawn_options = {
         args = args,
