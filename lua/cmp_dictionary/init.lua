@@ -14,6 +14,10 @@ function source:is_available()
     return config.ready
 end
 
+function source.get_keyword_pattern()
+    return [[\k\+]]
+end
+
 local candidate_cache = {
     req = "",
     result = {},
