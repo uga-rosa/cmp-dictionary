@@ -43,6 +43,11 @@ require("cmp_dictionary").setup({
 
 # Option
 
+#### iskeyword
+
+This plugin looks at |iskeyword| in vim. If you use a dictionary that contains special characters, please configure it appropriately.
+For example, if you want to complete the word `\word`, you would need to add `set iskeyword+=\` to your configuration file.
+
 #### dic
 
 table (default: { [*] = {}, filename = nil, filepath = nil })
