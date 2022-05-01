@@ -4,11 +4,12 @@
 Table of Contents                           *cmp-dictionary-table-of-contents*
 
 1. cmp-dictionary                              |cmp-dictionary-cmp-dictionary|
-2. Usage                                                |cmp-dictionary-usage|
-3. Option                                              |cmp-dictionary-option|
-4. Find dictionaries                        |cmp-dictionary-find-dictionaries|
-5. Create dictionaries                    |cmp-dictionary-create-dictionaries|
-6. Lazy loading                                  |cmp-dictionary-lazy-loading|
+2. Requirements                                  |cmp-dictionary-requirements|
+3. Usage                                                |cmp-dictionary-usage|
+4. Option                                              |cmp-dictionary-option|
+5. Find dictionaries                        |cmp-dictionary-find-dictionaries|
+6. Create dictionaries                    |cmp-dictionary-create-dictionaries|
+7. Lazy loading                                  |cmp-dictionary-lazy-loading|
 
 ==============================================================================
 1. cmp-dictionary                              *cmp-dictionary-cmp-dictionary*
@@ -16,7 +17,15 @@ Table of Contents                           *cmp-dictionary-table-of-contents*
 Dictionary completion source for nvim-cmp <https://github.com/hrsh7th/nvim-cmp>
 
 ==============================================================================
-2. Usage                                                *cmp-dictionary-usage*
+2. Requirements                                  *cmp-dictionary-requirements*
+
+
+- neovim >= 0.7
+- nvim-cmp <https://github.com/hrsh7th/nvim-cmp>
+
+
+==============================================================================
+3. Usage                                                *cmp-dictionary-usage*
 
 Example setting
 
@@ -57,7 +66,7 @@ Example setting
 
 
 ==============================================================================
-3. Option                                              *cmp-dictionary-option*
+4. Option                                              *cmp-dictionary-option*
 
                                                     *cmp-dictionary-iskeyword*
 
@@ -162,7 +171,7 @@ debug                                  boolean (default: false)
 If true, debug messages are output.
 
 ==============================================================================
-4. Find dictionaries                        *cmp-dictionary-find-dictionaries*
+5. Find dictionaries                        *cmp-dictionary-find-dictionaries*
 
 You can download dic from aspell.net
 <https://ftp.gnu.org/gnu/aspell/dict/0index.html> or installing by package
@@ -183,7 +192,7 @@ dic for this plugin (plain text).
 
 
 ==============================================================================
-5. Create dictionaries                    *cmp-dictionary-create-dictionaries*
+6. Create dictionaries                    *cmp-dictionary-create-dictionaries*
 
 The dictionary is recognized as a list delimited by '%s'. '%s' is a space,
 ','',', or '. For example, if you use the following file as a dictionary, the
@@ -196,7 +205,7 @@ source to be added is'{"hello", "world", "!"}’.
 
 
 ==============================================================================
-6. Lazy loading                                  *cmp-dictionary-lazy-loading*
+7. Lazy loading                                  *cmp-dictionary-lazy-loading*
 
 By default, reading dictionaries are fired by `BufEnter`. So if this plugin
 loading is set to `InsertEnter` or something, the dictionary will not load and
