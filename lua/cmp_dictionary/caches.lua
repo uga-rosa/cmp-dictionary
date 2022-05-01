@@ -31,99 +31,26 @@ items.use_cache = {}
 
 ---Create dictionary data from buffers
 ---@param buffers {path: string, name: string, buffer: string}[]
-local function _create_cache(buffers, exact, async)
+local function _create_cache(buffers, async)
     local new_caches = {}
 
     if async then
         buffers = require("mpack").Unpacker()(buffers)
     end
 
-    -- grouping by first some letters
-    local function indexing(item)
-        local index = {}
-
-        if exact == -1 then
-            for _, i in pairs(item) do
-                if exact < #i.label then
-                    exact = #i.label
-                end
-            end
-        end
-
-        for len = 1, exact do
-            local s = 1
-            while #item[s].label < len do
-                s = s + 1
-            end
-            local _pre = item[s].label:sub(1, len)
-            index[_pre] = { start = s }
-            local pre
-            for j = s + 1, #item do
-                local i = item[j].label
-                if #i >= len then
-                    pre = i:sub(1, len)
-                    if pre ~= _pre then
-                        if index[_pre].last == nil then
-                            index[_pre].last = j - 1
-                        end
-                        index[pre] = { start = j }
-                        _pre = pre
-                    end
-                elseif not index[_pre].last then
-                    index[_pre].last = j - 1
-                end
-            end
-            index[_pre].last = #item
-        end
-
-        return { item = item, index = index }
-    end
-
-    -- vim.gsplit
-    local function gsplit(s, sep, plain)
-        local start = 1
-        local done = false
-
-        local function _pass(i, j, ...)
-            if i then
-                assert(j + 1 > start, "Infinite loop detected")
-                local seg = s:sub(start, i - 1)
-                start = j + 1
-                return seg, ...
-            else
-                done = true
-                return s:sub(start)
-            end
-        end
-
-        return function()
-            if done or (s == "" and sep == "") then
-                return
-            end
-            if sep == "" then
-                if start == #s then
-                    done = true
-                end
-                return _pass(start + 1, start)
-            end
-            return _pass(s:find(sep, start, plain))
-        end
-    end
-
     for _, buf in ipairs(buffers) do
-        local new_cache = {}
+        local item = {}
         local detail = "belong to `" .. buf.name .. "`"
-        for w in gsplit(buf.buffer, "%s+") do
+        for w in vim.gsplit(buf.buffer, "%s+") do
             if w ~= "" then
-                table.insert(new_cache, { label = w, detail = detail })
+                table.insert(item, { label = w, detail = detail })
             end
         end
-        table.sort(new_cache, function(item1, item2)
+        table.sort(item, function(item1, item2)
             return item1.label < item2.label
         end)
 
-        new_caches[buf.path] = indexing(new_cache)
-        new_caches[buf.path].mtime = buf.mtime
+        new_caches[buf.path] = { item = item, mtime = buf.mtime }
     end
 
     if async then
@@ -132,9 +59,9 @@ local function _create_cache(buffers, exact, async)
     return new_caches
 end
 
-function items.create_cache_sync(buffers, exact)
+function items.create_cache_sync(buffers)
     local paths = {}
-    for path, cache in pairs(_create_cache(buffers, exact, false)) do
+    for path, cache in pairs(_create_cache(buffers, false)) do
         items.cache:set(path, cache)
         table.insert(items.use_cache, cache)
         table.insert(paths, path)
@@ -245,14 +172,14 @@ function items.update()
             if config.get("async") then
                 if vim.mpack then
                     log("Run asynchronously")
-                    items.create_cache_async:queue(vim.mpack.encode(buffers), config.get("exact"), true)
+                    items.create_cache_async:queue(vim.mpack.encode(buffers), true)
                     return
                 else
                     log("Module `mpack` is not available")
                 end
             end
             log("Run synchronously")
-            items.create_cache_sync(buffers, config.get("exact"))
+            items.create_cache_sync(buffers)
         end
     end)
 end

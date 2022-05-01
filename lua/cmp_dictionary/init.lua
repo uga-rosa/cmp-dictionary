@@ -3,8 +3,10 @@ local source = {}
 local cmp = require("cmp")
 local luv = vim.loop
 
+local utf8 = require("cmp_dictionary.lib.utf8")
 local caches = require("cmp_dictionary.caches")
 local config = require("cmp_dictionary.config")
+local util = require("cmp_dictionary.util")
 
 function source.new()
     return setmetatable({}, { __index = source })
@@ -39,10 +41,27 @@ end
 
 local function get_from_caches(req)
     local result = {}
+
+    local ok, offset, codepoint
+    ok, offset = pcall(utf8.offset, req, -1, #req)
+    if not ok then
+        return result
+    end
+    ok, codepoint = pcall(utf8.codepoint, req, offset)
+    if not ok then
+        return result
+    end
+    local req_next = req:sub(1, offset - 1) .. utf8.char(codepoint + 1)
+
     for _, cache in pairs(caches.get()) do
-        local index = cache.index[req]
-        if index then
-            for i = index.start, index.last do
+        local start = util.binary_search(cache.item, req, function(vector, index, key)
+            return vector[index].label >= key
+        end)
+        local last = util.binary_search(cache.item, req_next, function(vector, index, key)
+            return vector[index].label >= key
+        end) - 1
+        if start > 0 and last > 0 and start <= last then
+            for i = start, last do
                 local item = cache.item[i]
                 item.label = item._label or item.label
                 table.insert(result, item)

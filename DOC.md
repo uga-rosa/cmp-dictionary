@@ -1,6 +1,11 @@
 # cmp-dictionary
 
-Dictionary completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)  
+Dictionary completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
+
+# Requirements
+
+- neovim >= 0.7
+- [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
 
 # Usage
 
