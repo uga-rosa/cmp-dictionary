@@ -1,210 +1,253 @@
-*cmp-dictionary.txt*                 Dictionary completion source for nvim-cmp
+*cmp-dictionary.txt*		 Dictionary completion source for nvim-cmp
 
 ==============================================================================
-Table of Contents                           *cmp-dictionary-table-of-contents*
+Contents					*cmp-dictionary-contents*
 
-1. cmp-dictionary                              |cmp-dictionary-cmp-dictionary|
-2. Requirements                                  |cmp-dictionary-requirements|
-3. Usage                                                |cmp-dictionary-usage|
-4. Option                                              |cmp-dictionary-option|
-5. Find dictionaries                        |cmp-dictionary-find-dictionaries|
-6. Create dictionaries                    |cmp-dictionary-create-dictionaries|
-7. Lazy loading                                  |cmp-dictionary-lazy-loading|
-
-==============================================================================
-1. cmp-dictionary                              *cmp-dictionary-cmp-dictionary*
-
-Dictionary completion source for nvim-cmp <https://github.com/hrsh7th/nvim-cmp>
+Introduction					|cmp-dictionary-introduction|
+Commands					|cmp-dictionary-commands|
+Setting						|cmp-dictionary-setting|
+Option						|cmp-dictionary-option|
+Find dictionaries				|cmp-dictionary-find-dictionaries|
+Create dictionaries				|cmp-dictionary-create-dictionaries|
+Lazy loading					|cmp-dictionary-lazy-loading|
 
 ==============================================================================
-2. Requirements                                  *cmp-dictionary-requirements*
+Introduction					*cmp-dictionary-introduction*
+
+							*cmp-dictionary*
+cmp-dictionary ~
+
+Dictionary completion source for nvim-cmp.
+<https://github.com/hrsh7th/nvim-cmp>
 
 
+Requirements
 - neovim >= 0.7
 - nvim-cmp <https://github.com/hrsh7th/nvim-cmp>
 
 
 ==============================================================================
-3. Usage                                                *cmp-dictionary-usage*
+Commands					*cmp-dictionary-commands*
+
+							*CmpDictionaryUpdate*
+:CmpDictionaryUpdate
+
+	Updates the dictionary. It is registered in BufEnter by default, and
+	basically you will not need to hit this command explicitly. Use when
+	lazy load and when spelllang is changed.
+
+
+==============================================================================
+Setting							*cmp-dictionary-setting*
 
 Example setting
 
 >
-    require("cmp").setup({
-      -- other settings
-      sources = {
-        -- other sources
-        {
-          name = "dictionary",
-          keyword_length = 2,
-        },
-      }
-    })
-    
-    require("cmp_dictionary").setup({
-        dic = {
-            ["*"] = { "/usr/share/dict/words" },
-            ["lua"] = "path/to/lua.dic",
-            ["javascript,typescript"] = { "path/to/js.dic", "path/to/js2.dic" },
-            filename = {
-                ["xmake.lua"] = { "path/to/xmake.dic", "path/to/lua.dic" },
-            },
-            filepath = {
-                ["%.tmux.*%.conf"] = "path/to/tmux.dic"
-            },
-        },
-        -- The following are default values, so you don't need to write them if you don't want to change them
-        exact = 2,
-        first_case_insensitive = false,
-        document = false,
-        document_command = "wn %s -over",
-        async = false, 
-        capacity = 5,
-        debug = false,
-    })
+	require("cmp").setup({
+		-- other settings
+		sources = {
+		-- other sources
+			{
+				name = "dictionary",
+				keyword_length = 2,
+			},
+		}
+	})
+	
+	require("cmp_dictionary").setup({
+		dic = {
+			["*"] = { "/usr/share/dict/words" },
+			["lua"] = "path/to/lua.dic",
+			["javascript,typescript"] = { "path/to/js.dic", "path/to/js2.dic" },
+			filename = {
+				["xmake.lua"] = { "path/to/xmake.dic", "path/to/lua.dic" },
+			},
+			filepath = {
+				["%.tmux.*%.conf"] = "path/to/tmux.dic"
+			},
+			spelllang = {
+				en = "path/to/english.dic",
+			},
+		},
+		-- The following are default values.
+		exact = 2,
+		first_case_insensitive = false,
+		document = false,
+		document_command = "wn %s -over",
+		async = false, 
+		capacity = 5,
+		debug = false,
+	})
 <
 
 
 ==============================================================================
-4. Option                                              *cmp-dictionary-option*
+Option							*cmp-dictionary-option*
 
-                                                    *cmp-dictionary-iskeyword*
+						*cmp-dictionary-iskeyword*
+iskeyword ~
 
-iskeyword                              This plugin looks at |iskeyword| in vim.
-                                       If you use a dictionary that contains
-                                       special characters, please configure it
-                                       appropriately. For example, if you want
-                                       to complete the word `\word`, you would
-                                       need to add `set iskeyword+=\` to your
-                                       configuration file.
+	This plugin looks at |iskeyword| in vim. If you use a dictionary that
+	contains special characters, please configure it appropriately. For
+	example, if you want to complete the word `\word`, you would need to
+	add `set iskeyword+=\` to your configuration file.
 
 
-                                                          *cmp-dictionary-dic*
+						*cmp-dictionary-spelllang*
+spelllang ~
 
-dic                                    table (default: { [*] = {}, filename =
-                                       nil, filepath = nil })
-
-
-All but three special keys are file types, and the values are the corresponding
-dictionary arrays. You can also use comma-separated file types for the key. If
-one dictionary, you can use a string instead of an array.
-
-The special key 'filename' takes a table as its value, which has keys of file
-names and values of corresponding dictionary array. The keys are used in exact
-match with the result of |expand|('%:t').
-
-The special key 'filepath' is a table in a format similar to filename. The
-difference is that the keys are lua patterns and are used to match
-|expand|('%:p').
-
-The special key '*' is a global setting. Dictionaries set to this key are
-always read.
-
-                                                        *cmp-dictionary-exact*
-
-exact                                  integer (default: 2)
-
-
-It decides how many characters at the beginning are used as the exact match. If
--1, only candidates with an exact prefix match will be returns.
-
-                                       *cmp-dictionary-first_case_insensitive*
-
-first_case_insensitive                 boolean (default: false)
-
-
-If true, it will ignore the case of the first character. For example, if you
-have "Example" and "excuse" in your dictionary, typing "Ex" will bring up
-"Example" and "Excuse" as candidates, while typing "ex" will bring up "example"
-and "excuse".
-
-                                                     *cmp-dictionary-document*
-
-document                               boolean (default: false)
-
-
-If true, activate document using external command. See
-|cmp-dictionary-document_command|
-
-                                             *cmp-dictionary-document_command*
-
-document_command                       string or list-like table (default: 'wn
-                                       %s -over')
-
-
-This command is used above document feature. The '%s' will contain the
-candidate word. The default 'wn' command is wordnet
-<https://wordnet.princeton.edu/>
-
-If a string, the arguments are recognized by separating it with a space
-character. If you don’t want that, use a table.
-
-If a table, the first element is the command and the second and subsequent are
-the arguments. For example, the default setting would be '{"wn", "%s",
-"-over"}'.
-
-                                                        *cmp-dictionary-async*
-
-async                                  boolean (default: false)
-
-
-If true, perform the initialization in a separate thread. If you are using a
-very large dictionary and the body operation is blocked, try this.
-
-You need module mpack, so you need to install lua51-mpack or build neovim of
-0.6 or higher.
-
-                                                     *cmp-dictionary-capacity*
-
-capacity                               integer (default: 5)
-
-
-Determines the maximum number of dictionaries to be cached. This will prevent
-duplicate reads when you switch dictionaries with the settings described above.
-
-                                                        *cmp-dictionary-debug*
-
-debug                                  boolean (default: false)
-
-
-If true, debug messages are output.
-
-==============================================================================
-5. Find dictionaries                        *cmp-dictionary-find-dictionaries*
-
-You can download dic from aspell.net
-<https://ftp.gnu.org/gnu/aspell/dict/0index.html> or installing by package
-manager, xbps extract to
+	This plugin looks at |spelllang| for detecting the language. Once the
+	dictionary is set in |cmp-dictionary-dic-spelllang|, you can update
+	|spelllang| and do |CmpDictionaryUpdate| to change the dictionary to
+	be used.
 
 >
-    $ ls /usr/share/dict/
-    american-english  british-english  words
+	:setl spelllang=hoge
+	:CmpDictionaryUpdate
 <
 
+
+							*cmp-dictionary-dic*
+dic ~
+	table (default: {
+		[*] = {},
+		filename = nil,
+		filepath = nil,
+		spelllang = nil
+	})
+
+	All but four special keys are file types, and the values are the
+	corresponding dictionary arrays. You can also use comma-separated file
+	types for the key. If one dictionary, you can use a string instead of
+	an array.
+
+						*cmp-dictionary-dic-filename*
+	The special key 'filename' takes a table as its value, which has keys
+	of file names and values of corresponding dictionary array. The keys
+	are used in exact match with the result of |expand|('%:t').
+
+						*cmp-dictionary-dic-filepath*
+	The special key 'filepath' is a table in a format similar to filename.
+	The difference is that the keys are lua patterns and are used to match
+	|expand|('%:p').
+
+						*cmp-dictionary-dic-spelllang*
+	The special key 'spelllang' is a table in a format similar to
+	filename. The difference is that the keys are names of languages and
+	are used to match |spelllang|.
+
+						*cmp-dictionary-dic-asterisk*
+	The special key '*' is a global setting. Dictionaries set to this key
+	are always read.
+
+	All dictionaries that meet the conditions will be loaded.
+
+
+							*cmp-dictionary-exact*
+exact ~
+	integer (default: 2)
+
+	It decides how many characters at the beginning are used as the exact
+	match. If -1, only candidates with an exact prefix match will be
+	returns.
+
+
+					*cmp-dictionary-first-case-insensitive*
+first_case_insensitive ~
+	boolean (default: false)
+
+	If true, it will ignore the case of the first character. For example,
+	if you have "Example" and "excuse" in your dictionary, typing "Ex"
+	will bring up "Example" and "Excuse" as candidates, while typing "ex"
+	will bring up "example" and "excuse".
+
+
+							*cmp-dictionary-document*
+document ~
+	boolean (default: false)
+
+	If true, activate document using external command. See
+	|cmp-dictionary-document-command|
+
+
+						*cmp-dictionary-document-command*
+document_command ~
+	string or list-like table (default: 'wn %s -over')
+
+	This command is used above document feature. The '%s' will contain the
+	candidate word. The default 'wn' command is wordnet.
+	<https://wordnet.princeton.edu/>
+
+	If a string, the arguments are recognized by separating it with a
+	space character. If you don’t want that, use a table.
+
+	If a table, the first element is the command and the second and
+	subsequent are the arguments. For example, the default setting would
+	be '{"wn", "%s", "-over"}'.
+
+
+							*cmp-dictionary-async*
+async ~
+	boolean (default: false)
+
+	If true, perform the initialization in a separate thread. If you are
+	using a very large dictionary and the body operation is blocked, try
+	this.
+
+	Use |vim.mpack|. If an error occurs, the neovim version is out of date.
+
+
+							*cmp-dictionary-capacity*
+capacity ~
+	integer (default: 5)
+
+	Determines the maximum number of dictionaries to be cached. This will
+	prevent duplicate reads when you switch dictionaries with the settings
+	described above.
+
+
+							*cmp-dictionary-debug*
+debug ~
+	boolean (default: false)
+
+	If true, debug messages are output.
+
+
+==============================================================================
+Find dictionaries			*cmp-dictionary-find-dictionaries*
+
+You can download dic from aspell.net or installing by package manager, xbps
+extract to
+<https://ftp.gnu.org/gnu/aspell/dict/0index.html>
+
+>
+	$ ls /usr/share/dict/
+	american-english	british-english	words
+<
 
 After installing aspell and dictionary you want, run following command to get
 dic for this plugin (plain text).
 
 >
-    aspell -d <lang> dump master | aspell -l <lang> expand > my.dict
+	aspell -d <lang> dump master | aspell -l <lang> expand > my.dict
 <
 
 
 ==============================================================================
-6. Create dictionaries                    *cmp-dictionary-create-dictionaries*
+Create dictionaries			*cmp-dictionary-create-dictionaries*
 
 The dictionary is recognized as a list delimited by '%s'. '%s' is a space,
 ','',', or '. For example, if you use the following file as a dictionary, the
 source to be added is'{"hello", "world", "!"}’.
 
 >
-    hello
-    world !
+	hello
+	world !
 <
 
 
 ==============================================================================
-7. Lazy loading                                  *cmp-dictionary-lazy-loading*
+Lazy loading					*cmp-dictionary-lazy-loading*
 
 By default, reading dictionaries are fired by `BufEnter`. So if this plugin
 loading is set to `InsertEnter` or something, the dictionary will not load and
@@ -214,28 +257,28 @@ the plugin is loaded (after setup).
 For example, if you use packer.nvim, you can use
 
 >
-    use({
-        "hrsh7th/nvim-cmp",
-        event = "InsertEnter",
-        -- other setting
-    })
-    use({
-        "uga-rosa/cmp-dictionary",
-        after = "nvim-cmp",
-        config = function()
-            require("cmp_dictionary").setup({
-                dic = {
-                    ["*"] = "/usr/share/dict/words",
-                },
-                first_case_insensitive = true,
-                document = true,
-            })
-            require("cmp_dictionary").update() -- THIS
-        end
-    })
+	use({
+		"hrsh7th/nvim-cmp",
+		event = "InsertEnter",
+		-- other setting
+	})
+	use({
+		"uga-rosa/cmp-dictionary",
+		after = "nvim-cmp",
+		config = function()
+			require("cmp_dictionary").setup({
+				dic = {
+					["*"] = "/usr/share/dict/words",
+				},
+				first_case_insensitive = true,
+				document = true,
+			})
+			require("cmp_dictionary").update() -- THIS
+			-- OR
+			-- vim.cmd("CmpDictionaryUpdate")
+		end
+	})
 <
 
-
-Generated by panvimdoc <https://github.com/kdheepak/panvimdoc>
 
 vim:tw=78:ts=8:noet:ft=help:norl:
