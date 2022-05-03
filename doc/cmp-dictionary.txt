@@ -97,9 +97,8 @@ The special key 'filepath' is a table in a format similar to filename. The
 difference is that the keys are lua patterns and are used to match
 |expand|('%:p').
 
-The special key ’*’ is a global setting.
-
-The priority is 'filename' > 'filepath' > 'filetype' > ’*’
+The special key '*' is a global setting. Dictionaries set to this key are
+always read.
 
                                                         *cmp-dictionary-exact*
 
