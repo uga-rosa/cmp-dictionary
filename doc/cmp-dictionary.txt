@@ -23,7 +23,7 @@ Dictionary completion source for nvim-cmp.
 
 Requirements
 - neovim >= 0.7
-- nvim-cmp <https://github.com/hrsh7th/nvim-cmp>
+- nvim-cmp
 
 
 ==============================================================================
