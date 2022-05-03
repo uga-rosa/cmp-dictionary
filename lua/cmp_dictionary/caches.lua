@@ -5,6 +5,7 @@
 ---@field use_cache dic_data[] Currently dictionary data
 local items = {}
 items.post = {}
+items.just_updated = false
 
 local fn = vim.fn
 local api = vim.api
@@ -66,6 +67,7 @@ function items.create_cache_sync(buffers)
         table.insert(items.use_cache, cache)
         table.insert(paths, path)
     end
+    items.just_updated = true
     log("All dictionary loaded", paths)
 end
 
@@ -76,6 +78,7 @@ items.create_cache_async = uv.new_work(_create_cache, function(_cache)
         table.insert(items.use_cache, cache)
         table.insert(paths, path)
     end
+    items.just_updated = true
     log("All dictionary loaded", paths)
 end)
 
@@ -129,15 +132,20 @@ function items.update()
             end
         end
     end
-    if dic[vim.bo.filetype] then
-        dictionaries = vim.list_extend(dictionaries, dic[vim.bo.filetype])
+    if dic.spelllang and vim.bo.spelllang then
+        for lang in vim.gsplit(vim.bo.spelllang, ",") do
+            dictionaries = vim.list_extend(dictionaries, dic.spelllang[lang] or {})
+        end
     end
-    dictionaries = vim.list_extend(dictionaries, dic["*"])
+    dictionaries = vim.list_extend(dictionaries, dic[vim.bo.filetype] or {})
+    dictionaries = vim.list_extend(dictionaries, dic["*"] or {})
 
     log("Dictionaries for the current buffer:", dictionaries)
 
     local updated_or_new = items.should_update(dictionaries)
+
     if #updated_or_new == 0 then
+        items.just_updated = true
         return
     end
 
@@ -186,6 +194,14 @@ end
 ---@return dic_data[]
 function items.get()
     return items.use_cache
+end
+
+function items.is_just_updated()
+    if items.just_updated then
+        items.just_updated = false
+        return true
+    end
+    return false
 end
 
 return items

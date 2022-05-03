@@ -22,7 +22,7 @@ end
 
 local candidate_cache = {
     req = "",
-    result = {},
+    items = {},
 }
 
 local function is_capital(str)
@@ -40,16 +40,16 @@ local function to_upper_first(str)
 end
 
 local function get_from_caches(req)
-    local result = {}
+    local items = {}
 
     local ok, offset, codepoint
     ok, offset = pcall(utf8.offset, req, -1, #req)
     if not ok then
-        return result
+        return items
     end
     ok, codepoint = pcall(utf8.codepoint, req, offset)
     if not ok then
-        return result
+        return items
     end
     local req_next = req:sub(1, offset - 1) .. utf8.char(codepoint + 1)
 
@@ -64,43 +64,46 @@ local function get_from_caches(req)
             for i = start, last do
                 local item = cache.item[i]
                 item.label = item._label or item.label
-                table.insert(result, item)
+                table.insert(items, item)
             end
         end
     end
-    return result
+    return items
 end
 
 function source.get_candidate(req, isIncomplete)
     if candidate_cache.req == req then
-        return { items = candidate_cache.result, isIncomplete = isIncomplete }
+        return { items = candidate_cache.items, isIncomplete = isIncomplete }
     end
 
-    local result = get_from_caches(req)
+    local items = get_from_caches(req)
 
     if config.get("first_case_insensitive") then
         if is_capital(req) then
             for _, item in ipairs(get_from_caches(to_lower_first(req))) do
                 item._label = item._label or item.label
                 item.label = to_upper_first(item._label)
-                table.insert(result, item)
+                table.insert(items, item)
             end
         else
             for _, item in ipairs(get_from_caches(to_upper_first(req))) do
                 item._label = item._label or item.label
                 item.label = to_lower_first(item._label)
-                table.insert(result, item)
+                table.insert(items, item)
             end
         end
     end
 
     candidate_cache.req = req
-    candidate_cache.result = result
+    candidate_cache.items = items
 
-    return { items = result, isIncomplete = isIncomplete }
+    return { items = items, isIncomplete = isIncomplete }
 end
 
 function source:complete(request, callback)
+    if caches.is_just_updated() then
+        candidate_cache = {}
+    end
     local exact = config.get("exact")
     local req = request.context.cursor_before_line:sub(request.offset, request.offset + exact - 1)
     local isIncomplete = #req < exact
