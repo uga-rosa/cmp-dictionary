@@ -55,7 +55,7 @@ For example, if you want to complete the word `\word`, you would need to add `se
 
 #### dic
 
-table (default: { [*] = {}, filename = nil, filepath = nil })
+table (default: { [\*] = {}, filename = nil, filepath = nil })
 
 All but three special keys are file types, and the values are the corresponding dictionary arrays.
 You can also use comma-separated file types for the key.
@@ -67,9 +67,7 @@ The keys are used in exact match with the result of |expand|('%:t').
 The special key 'filepath' is a table in a format similar to filename.
 The difference is that the keys are lua patterns and are used to match |expand|('%:p').
 
-The special key '*' is a global setting.
-
-The priority is 'filename' > 'filepath' > 'filetype' > '*'
+The special key '\*' is a global setting. Dictionaries set to this key are always read.
 
 #### exact
 

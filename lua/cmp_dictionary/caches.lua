@@ -15,7 +15,7 @@ local config = require("cmp_dictionary.config")
 local function log(...)
     if config.get("debug") then
         local msg = {}
-        for _, v in ipairs({...}) do
+        for _, v in ipairs({ ... }) do
             if type(v) == "table" then
                 v = vim.inspect(v)
             end
@@ -81,9 +81,6 @@ end)
 
 function items.should_update(dictionaries)
     log("check to need to load >>>")
-    if type(dictionaries) ~= "table" then
-        dictionaries = { dictionaries }
-    end
     local updated_or_new = {}
     for _, dic in ipairs(dictionaries) do
         local path = fn.expand(dic)
@@ -117,24 +114,25 @@ function items.update()
     end
 
     items.use_cache = {}
-    local dictionaries
+    local dictionaries = {}
 
     local dic = config.get("dic")
     if dic.filename then
         local filename = vim.fn.expand("%:t")
-        dictionaries = dic.filename[filename]
+        dictionaries = dic.filename[filename] or {}
     end
-    if dic.filepath and not dictionaries then
+    if dic.filepath then
         local filepath = vim.fn.expand("%:p")
         for path, dict in pairs(dic.filepath) do
             if filepath:find(path) then
-                dictionaries = dict
+                dictionaries = vim.list_extend(dictionaries, dict)
             end
         end
     end
-    if not dictionaries then
-        dictionaries = dic[vim.bo.filetype] or dic["*"]
+    if dic[vim.bo.filetype] then
+        dictionaries = vim.list_extend(dictionaries, dic[vim.bo.filetype])
     end
+    dictionaries = vim.list_extend(dictionaries, dic["*"])
 
     log("Dictionaries for the current buffer:", dictionaries)
 
