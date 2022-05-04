@@ -4,14 +4,15 @@
 ---@field cache LfuCache cached dictionary data (lfu)
 ---@field use_cache dic_data[] Currently dictionary data
 local items = {}
-items.post = {}
 items.just_updated = false
 
 local fn = vim.fn
 local api = vim.api
 local uv = vim.loop
+
 local lfu = require("cmp_dictionary.lfu")
 local config = require("cmp_dictionary.config")
+local Promise = require("cmp_dictionary.lib.promise")
 
 local function log(...)
     if config.get("debug") then
@@ -30,57 +31,81 @@ end
 items.cache = lfu.init(config.get("capacity"))
 items.use_cache = {}
 
+local function read_file(path)
+    -- 292 == 0x444
+    local fd = assert(uv.fs_open(path, "r", 292))
+    local stat = assert(uv.fs_fstat(fd))
+    local buffer = assert(uv.fs_read(fd, stat.size, 0))
+    uv.fs_close(fd)
+    return buffer, stat
+end
+
 ---Create dictionary data from buffers
----@param buffers {path: string, name: string, buffer: string}[]
-local function _create_cache(buffers, async)
-    local new_caches = {}
-
+---@param data {path: string, name: string, buffer: string}[]
+local function _create_cache(data, async)
     if async then
-        buffers = require("mpack").Unpacker()(buffers)
+        data = vim.mpack.decode(data)
     end
 
-    for _, buf in ipairs(buffers) do
-        local item = {}
-        local detail = "belong to `" .. buf.name .. "`"
-        for w in vim.gsplit(buf.buffer, "%s+") do
-            if w ~= "" then
-                table.insert(item, { label = w, detail = detail })
-            end
+    local item = {}
+    local detail = "belong to `" .. data.name .. "`"
+    for w in vim.gsplit(data.buffer, "%s+") do
+        if w ~= "" then
+            table.insert(item, { label = w, detail = detail })
         end
-        table.sort(item, function(item1, item2)
-            return item1.label < item2.label
-        end)
-
-        new_caches[buf.path] = { item = item, mtime = buf.mtime }
     end
+    table.sort(item, function(item1, item2)
+        return item1.label < item2.label
+    end)
+
+    local cache = { item = item, mtime = data.mtime, path = data.path }
 
     if async then
-        return require("mpack").Packer()(new_caches)
+        return vim.mpack.encode(cache)
     end
-    return new_caches
+    return cache
 end
 
-function items.create_cache_sync(buffers)
-    local paths = {}
-    for path, cache in pairs(_create_cache(buffers, false)) do
-        items.cache:set(path, cache)
-        table.insert(items.use_cache, cache)
-        table.insert(paths, path)
-    end
-    items.just_updated = true
-    log("All dictionary loaded", paths)
+local function create_cache_sync(data)
+    local cache = _create_cache(data, false)
+    items.cache:set(cache.path, cache)
+    table.insert(items.use_cache, cache)
+    log("Create cache: ", cache.path)
 end
 
-items.create_cache_async = uv.new_work(_create_cache, function(_cache)
-    local paths = {}
-    for path, cache in pairs(vim.mpack.decode(_cache)) do
-        items.cache:set(path, cache)
-        table.insert(items.use_cache, cache)
-        table.insert(paths, path)
-    end
-    items.just_updated = true
-    log("All dictionary loaded", paths)
+local create_cache_async = uv.new_work(_create_cache, function(cache)
+    cache = vim.mpack.decode(cache)
+    items.cache:set(cache.path, cache)
+    table.insert(items.use_cache, cache)
+    log("Create cache: ", cache.path)
 end)
+
+function items.read_cache(path)
+    return Promise.new(function(resolve)
+        local name = fn.fnamemodify(path, ":t")
+        local buffer, stat = read_file(path)
+        log(("`%s` are loaded"):format(path))
+        local data = {
+            name = name,
+            path = path,
+            buffer = buffer,
+            mtime = stat.mtime.sec,
+        }
+
+        if config.get("async") then
+            if vim.mpack then
+                log("Run asynchronously")
+                create_cache_async:queue(vim.mpack.encode(data), true)
+            else
+                log("The version of neovim is out of date.")
+            end
+        else
+            log("Run synchronously")
+            create_cache_sync(data)
+        end
+        resolve()
+    end)
+end
 
 function items.should_update(dictionaries)
     log("check to need to load >>>")
@@ -149,44 +174,8 @@ function items.update()
         return
     end
 
-    local buffers = {}
-
-    for _, path in ipairs(updated_or_new) do
-        local name = fn.fnamemodify(path, ":t")
-
-        uv.fs_open(path, "r", 438, function(err, fd)
-            assert(not err, err)
-            uv.fs_fstat(fd, function(err2, stat)
-                assert(not err2, err2)
-                uv.fs_read(fd, stat.size, 0, function(err3, buffer)
-                    assert(not err3, err3)
-                    uv.fs_close(fd, function(err4)
-                        assert(not err4, err4)
-                        table.insert(buffers, { buffer = buffer, path = path, name = name, mtime = stat.mtime.sec })
-                        log(("`%s` are loaded"):format(path))
-                    end)
-                end)
-            end)
-        end)
-    end
-
-    local timer = uv.new_timer()
-    timer:start(0, 100, function()
-        if #buffers == #updated_or_new then
-            timer:stop()
-            timer:close()
-            if config.get("async") then
-                if vim.mpack then
-                    log("Run asynchronously")
-                    items.create_cache_async:queue(vim.mpack.encode(buffers), true)
-                    return
-                else
-                    log("Module `mpack` is not available")
-                end
-            end
-            log("Run synchronously")
-            items.create_cache_sync(buffers)
-        end
+    Promise.all(vim.tbl_map(items.read_cache, updated_or_new)):next(function(_)
+        log("All Dictionaries are loaded.")
     end)
 end
 
