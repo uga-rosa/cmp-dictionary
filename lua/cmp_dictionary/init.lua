@@ -106,7 +106,7 @@ function source:complete(request, callback)
     end
     local exact = config.get("exact")
     local req = request.context.cursor_before_line:sub(request.offset, request.offset + exact - 1)
-    local isIncomplete = #req < exact
+    local isIncomplete = exact == -1 or #req < exact
     callback(source.get_candidate(req, isIncomplete))
 end
 
