@@ -43,7 +43,7 @@ local function get_from_caches(req)
     local items = {}
 
     local ok, offset, codepoint
-    ok, offset = pcall(utf8.offset, req, -1, #req)
+    ok, offset = pcall(utf8.offset, req, -1)
     if not ok then
         return items
     end
@@ -51,6 +51,7 @@ local function get_from_caches(req)
     if not ok then
         return items
     end
+
     local req_next = req:sub(1, offset - 1) .. utf8.char(codepoint + 1)
 
     for _, cache in pairs(caches.get()) do
@@ -105,8 +106,35 @@ function source:complete(request, callback)
         candidate_cache = {}
     end
     local exact = config.get("exact")
-    local req = request.context.cursor_before_line:sub(request.offset, request.offset + exact - 1)
-    local isIncomplete = exact == -1 or #req < exact
+
+    ---@type string
+    local line = request.context.cursor_before_line
+    local offset = request.offset
+    line = line:sub(offset)
+    if line == "" then
+        return
+    end
+
+    local req, isIncomplete
+    if exact > 0 then
+        local line_len = utf8.len(line)
+        if line_len <= exact then
+            req = line
+            isIncomplete = line_len < exact
+        else
+            local last = exact
+            if line_len ~= #line then
+                last = utf8.offset(line, exact + 1) - 1
+            end
+            req = line:sub(1, last)
+            isIncomplete = false
+        end
+    else
+        -- must be -1
+        req = line
+        isIncomplete = true
+    end
+
     callback(source.get_candidate(req, isIncomplete))
 end
 
