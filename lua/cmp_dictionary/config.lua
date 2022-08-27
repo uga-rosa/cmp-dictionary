@@ -12,6 +12,7 @@ M.default = {
     document = false,
     document_command = "wn %s -over",
     async = false,
+    max_items = 1000,
     capacity = 5,
     debug = false,
 }
@@ -78,6 +79,7 @@ function M.setup(opt)
         document = { c.document, "b" },
         document_command = { c.document_command, { "s", "t" } },
         async = { c.async, "b" },
+        max_items = { c.max_items, "n" },
         capacity = { c.capacity, "n" },
         debug = { c.debug, "b" },
     })
