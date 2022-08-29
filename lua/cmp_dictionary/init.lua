@@ -54,6 +54,7 @@ local function get_from_caches(req, isIncomplete)
 
     local req_next = req:sub(1, offset - 1) .. utf8.char(codepoint + 1)
 
+    local max_items = config.get("max_items")
     for _, cache in pairs(caches.get()) do
         local start = util.binary_search(cache.item, req, function(vector, index, key)
             return vector[index].label >= key
@@ -62,7 +63,6 @@ local function get_from_caches(req, isIncomplete)
             return vector[index].label >= key
         end) - 1
         if start > 0 and last > 0 and start <= last then
-            local max_items = config.get("max_items")
             if max_items > 0 and last >= start + max_items then
                 last = start + max_items
                 isIncomplete = true

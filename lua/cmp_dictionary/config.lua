@@ -12,7 +12,7 @@ M.default = {
     document = false,
     document_command = "wn %s -over",
     async = false,
-    max_items = 1000,
+    max_items = -1,
     capacity = 5,
     debug = false,
 }
