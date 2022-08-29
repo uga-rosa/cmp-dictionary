@@ -39,17 +39,17 @@ local function to_upper_first(str)
     return u
 end
 
-local function get_from_caches(req)
+local function get_from_caches(req, isIncomplete)
     local items = {}
 
     local ok, offset, codepoint
     ok, offset = pcall(utf8.offset, req, -1)
     if not ok then
-        return items
+        return items, isIncomplete
     end
     ok, codepoint = pcall(utf8.codepoint, req, offset)
     if not ok then
-        return items
+        return items, isIncomplete
     end
 
     local req_next = req:sub(1, offset - 1) .. utf8.char(codepoint + 1)
@@ -62,6 +62,11 @@ local function get_from_caches(req)
             return vector[index].label >= key
         end) - 1
         if start > 0 and last > 0 and start <= last then
+            local max_items = config.get("max_items")
+            if max_items > 0 and last >= start + max_items then
+                last = start + max_items
+                isIncomplete = true
+            end
             for i = start, last do
                 local item = cache.item[i]
                 item.label = item._label or item.label
@@ -69,7 +74,7 @@ local function get_from_caches(req)
             end
         end
     end
-    return items
+    return items, isIncomplete
 end
 
 function source.get_candidate(req, isIncomplete)
@@ -77,7 +82,8 @@ function source.get_candidate(req, isIncomplete)
         return { items = candidate_cache.items, isIncomplete = isIncomplete }
     end
 
-    local items = get_from_caches(req)
+    local items
+    items, isIncomplete = get_from_caches(req, isIncomplete)
 
     if config.get("first_case_insensitive") then
         if is_capital(req) then

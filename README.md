@@ -49,6 +49,7 @@ The easiest way to add your favorite completion candidates to nvim-cmp.
 		document = false,
 		document_command = "wn %s -over",
 		async = false, 
+        max_items = 1000,
 		capacity = 5,
 		debug = false,
 	})
