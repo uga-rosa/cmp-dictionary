@@ -22,13 +22,14 @@ end
 ---Converts indexes of a string to positive numbers.
 ---@param str string
 ---@param idx integer
----@return boolean, integer
-local function validate_range(str, idx)
+---@param msg string
+---@return integer
+local function validate_range(str, idx, msg)
     idx = idx > 0 and idx or #str + idx + 1
     if idx < 0 or idx > #str then
-        return false
+        error(msg, 2)
     end
-    return true, idx
+    return idx
 end
 
 ---Receives zero or more integers, converts each one to its corresponding UTF-8 byte sequence
@@ -69,7 +70,7 @@ end
 ---Returns the next one character range.
 ---@param s string
 ---@param start_pos integer
----@return integer start_pos, integer end_pos
+---@return integer? start_pos, integer? end_pos
 local function next_char(s, start_pos)
     local b1 = s:byte(start_pos)
     if not b1 then
@@ -146,16 +147,8 @@ function utf8.codepoint(s, i, j)
         i = { i, "number", true },
         j = { j, "number", true },
     })
-
-    local ok
-    ok, i = validate_range(s, i or 1)
-    if not ok then
-        error(create_errmsg(2, "codepoint", "initial potision"), 2)
-    end
-    ok, j = validate_range(s, j or i)
-    if not ok then
-        error(create_errmsg(3, "codepoint", "final potision"), 2)
-    end
+    i = validate_range(s, i or 1, create_errmsg(2, "codepoint", "initial position"))
+    j = validate_range(s, j or i, create_errmsg(3, "codepoint", "final position"))
 
     local ret = {}
     repeat
@@ -196,23 +189,16 @@ end
 ---@param s string
 ---@param i? integer start position. default=1
 ---@param j? integer end position. default=-1
----@return integer
+---@return integer | nil
+---@return integer?
 function utf8.len(s, i, j)
     vim.validate({
         s = { s, "string" },
         i = { i, "number", true },
         j = { j, "number", true },
     })
-
-    local ok
-    ok, i = validate_range(s, i or 1)
-    if not ok then
-        error(create_errmsg(2, "len", "initial potision"), 2)
-    end
-    ok, j = validate_range(s, j or -1)
-    if not ok then
-        error(create_errmsg(3, "len", "final potision"), 2)
-    end
+    i = validate_range(s, i or 1, create_errmsg(2, "len", "initial position"))
+    j = validate_range(s, j or -1, create_errmsg(3, "len", "final position"))
 
     local len = 0
 
@@ -238,7 +224,7 @@ end
 ---@param s string
 ---@param n integer
 ---@param i? integer start position. if n >= 0, default=1, otherwise default=#s+1
----@return integer
+---@return integer?
 function utf8.offset(s, n, i)
     vim.validate({
         s = { s, "string" },
@@ -249,11 +235,7 @@ function utf8.offset(s, n, i)
     i = i or n >= 0 and 1 or #s + 1
 
     if n >= 0 or i ~= #s + 1 then
-        local ok
-        ok, i = validate_range(s, i)
-        if not ok then
-            error(create_errmsg(3, "offset", "position"), 2)
-        end
+        i = validate_range(s, i, create_errmsg(3, "offset", "position"))
     end
 
     if n == 0 then

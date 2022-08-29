@@ -22,4 +22,11 @@ function M.binary_search(vector, key, cb)
     return right
 end
 
+---@param expr string
+---@return string
+function M.expand(expr)
+    ---@diagnostic disable-next-line
+    return vim.fn.expand(expr)
+end
+
 return M

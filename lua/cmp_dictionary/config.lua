@@ -51,6 +51,7 @@ end
 function M.setup(opt)
     vim.validate({
         opt = { opt, "table" },
+        ["opt.dic"] = { opt.dic, "t" },
     })
 
     opt.dic = split_by_comma_of_keys(opt.dic)
@@ -64,6 +65,23 @@ function M.setup(opt)
     end
 
     M.config = vim.tbl_deep_extend("keep", opt, M.default)
+
+    local c = assert(M.config)
+    vim.validate({
+        dic = { c.dic, "t" },
+        ["dic.*"] = { c.dic["*"], "t", true },
+        ["dic.filename"] = { c.dic.filename, "t", true },
+        ["dic.filepath"] = { c.dic.filepath, "t", true },
+        ["dic.spelllang"] = { c.dic.spelllang, "t", true },
+        exact = { c.exact, "n" },
+        first_case_insensitive = { c.first_case_insensitive, "b" },
+        document = { c.document, "b" },
+        document_command = { c.document_command, { "s", "t" } },
+        async = { c.async, "b" },
+        capacity = { c.capacity, "n" },
+        debug = { c.debug, "b" },
+    })
+
     M.ready = true
 end
 

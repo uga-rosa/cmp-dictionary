@@ -12,6 +12,7 @@ local uv = vim.loop
 
 local lfu = require("cmp_dictionary.lfu")
 local config = require("cmp_dictionary.config")
+local util = require("cmp_dictionary.util")
 local Promise = require("cmp_dictionary.lib.promise")
 
 local function log(...)
@@ -41,7 +42,7 @@ local function read_file(path)
 end
 
 ---Create dictionary data from buffers
----@param data {path: string, name: string, buffer: string}[]
+---@param data {path: string, name: string, buffer: string, mtime: number}
 local function _create_cache(data, async)
     if async then
         data = vim.mpack.decode(data)
@@ -111,7 +112,7 @@ function items.should_update(dictionaries)
     log("check to need to load >>>")
     local updated_or_new = {}
     for _, dic in ipairs(dictionaries) do
-        local path = fn.expand(dic)
+        local path = util.expand(dic)
         if fn.filereadable(path) == 1 then
             local mtime = fn.getftime(path)
             local cache = items.cache:get(path)
@@ -146,11 +147,11 @@ function items.update()
 
     local dic = config.get("dic")
     if dic.filename then
-        local filename = vim.fn.expand("%:t")
+        local filename = util.expand("%:t")
         dictionaries = dic.filename[filename] or {}
     end
     if dic.filepath then
-        local filepath = vim.fn.expand("%:p")
+        local filepath = util.expand("%:p")
         for path, dict in pairs(dic.filepath) do
             if filepath:find(path) then
                 dictionaries = vim.list_extend(dictionaries, dict)
@@ -174,6 +175,7 @@ function items.update()
         return
     end
 
+    ---@diagnostic disable-next-line
     Promise.all(vim.tbl_map(items.read_cache, updated_or_new)):next(function(_)
         log("All Dictionaries are loaded.")
     end)
