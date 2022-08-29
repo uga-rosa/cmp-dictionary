@@ -205,8 +205,9 @@ max_items ~
 	This is the maximum number of candidates that this source will return
 	to the nvim-cmp body. Using a very large dictionary and returning tens
 	of thousands of candidates, completion becomes very laggy. This is an
-	option to avoid that. -1 would make it unlimited, but is not
-	recommended.
+	option to avoid that. If you don't get the candidates you want, you
+	can either increase this value, set it to -1 (meaning no limit), or
+	increase the value of 'exact'.
 
 
 							*cmp-dictionary-capacity*
