@@ -103,7 +103,7 @@ spelllang ~
 	be used.
 
 >
-	:setl spelllang=hoge
+	:setl spelllang=foo
 	:CmpDictionaryUpdate
 <
 
@@ -151,6 +151,8 @@ exact ~
 	It decides how many characters at the beginning are used as the exact
 	match. If -1, only candidates with an exact prefix match will be
 	returns.
+	Candidate refinement by this source is only prefix match using this
+	value (Fuzzy matching is left to the nvim-cmp body).
 
 
 					*cmp-dictionary-first-case-insensitive*
@@ -200,14 +202,14 @@ async ~
 
                                                       *cmp-dictionary-max-items*
 max_items ~
-	integer (default: 1000)
+	integer (default: -1)
 
 	This is the maximum number of candidates that this source will return
-	to the nvim-cmp body. Using a very large dictionary and returning tens
-	of thousands of candidates, completion becomes very laggy. This is an
-	option to avoid that. If you don't get the candidates you want, you
-	can either increase this value, set it to -1 (meaning no limit), or
-	increase the value of 'exact'.
+	to the nvim-cmp body. -1 means no limit. Using a very large dictionary
+	and returning tens of thousands of candidates, completion becomes very
+	laggy. This is an option to avoid that.
+	If you experience lag, setting this option and 'exact' appropriately
+	may help.
 
 
 							*cmp-dictionary-capacity*
