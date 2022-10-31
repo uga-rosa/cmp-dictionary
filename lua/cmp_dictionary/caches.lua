@@ -13,7 +13,6 @@ local uv = vim.loop
 local lfu = require("cmp_dictionary.lfu")
 local config = require("cmp_dictionary.config")
 local util = require("cmp_dictionary.util")
-local Promise = require("cmp_dictionary.lib.promise")
 
 local function log(...)
     if config.get("debug") then
@@ -82,30 +81,27 @@ local create_cache_async = uv.new_work(_create_cache, function(cache)
 end)
 
 function items.read_cache(path)
-    return Promise.new(function(resolve)
-        local name = fn.fnamemodify(path, ":t")
-        local buffer, stat = read_file(path)
-        log(("`%s` are loaded"):format(path))
-        local data = {
-            name = name,
-            path = path,
-            buffer = buffer,
-            mtime = stat.mtime.sec,
-        }
+    local name = fn.fnamemodify(path, ":t")
+    local buffer, stat = read_file(path)
+    log(("`%s` are loaded"):format(path))
+    local data = {
+        name = name,
+        path = path,
+        buffer = buffer,
+        mtime = stat.mtime.sec,
+    }
 
-        if config.get("async") then
-            if vim.mpack then
-                log("Run asynchronously")
-                create_cache_async:queue(vim.mpack.encode(data), true)
-            else
-                log("The version of neovim is out of date.")
-            end
+    if config.get("async") then
+        if vim.mpack then
+            log("Run asynchronously")
+            create_cache_async:queue(vim.mpack.encode(data), true)
         else
-            log("Run synchronously")
-            create_cache_sync(data)
+            log("The version of neovim is out of date.")
         end
-        resolve()
-    end)
+    else
+        log("Run synchronously")
+        create_cache_sync(data)
+    end
 end
 
 function items.should_update(dictionaries)
@@ -175,10 +171,8 @@ function items.update()
         return
     end
 
-    ---@diagnostic disable-next-line
-    Promise.all(vim.tbl_map(items.read_cache, updated_or_new)):next(function(_)
-        log("All Dictionaries are loaded.")
-    end)
+    vim.tbl_map(items.read_cache, updated_or_new)
+    log("All Dictionaries are loaded.")
 end
 
 ---Get now candidates
