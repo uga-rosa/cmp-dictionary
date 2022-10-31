@@ -24,6 +24,9 @@ Dictionary completion source for nvim-cmp.
 Requirements
 - neovim >= 0.7
 - nvim-cmp
+  - https://github.com/hrsh7th/nvim-cmp
+- plenary.nvim (only document feature)
+  - https://github.com/nvim-lua/plenary.nvim
 
 
 ==============================================================================
@@ -169,6 +172,7 @@ first_case_insensitive ~
 document ~
 	boolean (default: false)
 
+	plenary.nvim (https://github.com/nvim-lua/plenary.nvim) is required.
 	If true, activate document using external command. See
 	|cmp-dictionary-document-command|
 

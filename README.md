@@ -10,6 +10,7 @@ The easiest way to add your favorite completion candidates to nvim-cmp.
 
 - neovim >= 0.7
 - nvim-cmp
+- plenary.nvim (only document feature)
 
 # Setting
 
