@@ -9,10 +9,12 @@ function source.new()
     return setmetatable({}, { __index = source })
 end
 
+---@return boolean
 function source:is_available()
     return config.ready
 end
 
+---@return string
 function source.get_keyword_pattern()
     return [[\k\+]]
 end
@@ -22,20 +24,30 @@ local candidate_cache = {
     items = {},
 }
 
+---@param str string
+---@return boolean
 local function is_capital(str)
     return str:find("^%u") and true or false
 end
 
+---@param str string
+---@return string
 local function to_lower_first(str)
     local l = str:gsub("^.", string.lower)
     return l
 end
 
+---@param str string
+---@return string
 local function to_upper_first(str)
     local u = str:gsub("^.", string.upper)
     return u
 end
 
+---@param req string
+---@param isIncomplete? boolean
+---@return table
+---@return boolean?
 local function get_from_caches(req, isIncomplete)
     local items = {}
 
@@ -74,6 +86,9 @@ local function get_from_caches(req, isIncomplete)
     return items, isIncomplete
 end
 
+---@param req string
+---@param isIncomplete? boolean
+---@return table
 function source.get_candidate(req, isIncomplete)
     if candidate_cache.req == req then
         return { items = candidate_cache.items, isIncomplete = isIncomplete }
@@ -104,6 +119,8 @@ function source.get_candidate(req, isIncomplete)
     return { items = items, isIncomplete = isIncomplete }
 end
 
+---@param request cmp.SourceCompletionApiParams
+---@param callback fun(response: lsp.CompletionResponse|nil)
 function source:complete(request, callback)
     if caches.is_just_updated() then
         candidate_cache = {}

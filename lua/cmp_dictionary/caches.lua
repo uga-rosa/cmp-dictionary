@@ -12,8 +12,8 @@ local uv = vim.loop
 
 local lfu = require("cmp_dictionary.lfu")
 local config = require("cmp_dictionary.config")
-local util = require("cmp_dictionary.util")
 
+---@param ... unknown
 local function log(...)
     if config.get("debug") then
         local msg = {}
@@ -31,7 +31,10 @@ end
 items.cache = lfu.init(config.get("capacity"))
 items.use_cache = {}
 
-local function read_file(path)
+---@param path string
+---@return string
+---@return table
+local function read_file_sync(path)
     -- 292 == 0x444
     local fd = assert(uv.fs_open(path, "r", 292))
     local stat = assert(uv.fs_fstat(fd))
@@ -40,8 +43,14 @@ local function read_file(path)
     return buffer, stat
 end
 
+---@class DictionaryData
+---@field path string
+---@field name string
+---@field buffer string
+---@field mtime integer
+
 ---Create dictionary data from buffers
----@param data {path: string, name: string, buffer: string, mtime: number}
+---@param data DictionaryData
 local function _create_cache(data, async)
     if async then
         data = vim.mpack.decode(data)
@@ -66,6 +75,7 @@ local function _create_cache(data, async)
     return cache
 end
 
+---@param data DictionaryData
 local function create_cache_sync(data)
     local cache = _create_cache(data, false)
     items.cache:set(cache.path, cache)
@@ -80,9 +90,10 @@ local create_cache_async = uv.new_work(_create_cache, function(cache)
     log("Create cache: ", cache.path)
 end)
 
-function items.read_cache(path)
+---@param path string
+local function read_cache(path)
     local name = fn.fnamemodify(path, ":t")
-    local buffer, stat = read_file(path)
+    local buffer, stat = read_file_sync(path)
     log(("`%s` are loaded"):format(path))
     local data = {
         name = name,
@@ -104,11 +115,13 @@ function items.read_cache(path)
     end
 end
 
-function items.should_update(dictionaries)
+---@param dictionaries string[]
+---@return string[]
+local function should_update(dictionaries)
     log("check to need to load >>>")
     local updated_or_new = {}
     for _, dic in ipairs(dictionaries) do
-        local path = util.expand(dic)
+        local path = fn.expand(dic)
         if fn.filereadable(path) == 1 then
             local mtime = fn.getftime(path)
             local cache = items.cache:get(path)
@@ -143,11 +156,11 @@ function items.update()
 
     local dic = config.get("dic")
     if dic.filename then
-        local filename = util.expand("%:t")
+        local filename = fn.expand("%:t")
         dictionaries = dic.filename[filename] or {}
     end
     if dic.filepath then
-        local filepath = util.expand("%:p")
+        local filepath = fn.expand("%:p")
         for path, dict in pairs(dic.filepath) do
             if filepath:find(path) then
                 dictionaries = vim.list_extend(dictionaries, dict)
@@ -164,14 +177,14 @@ function items.update()
 
     log("Dictionaries for the current buffer:", dictionaries)
 
-    local updated_or_new = items.should_update(dictionaries)
+    local updated_or_new = should_update(dictionaries)
 
     if #updated_or_new == 0 then
         items.just_updated = true
         return
     end
 
-    vim.tbl_map(items.read_cache, updated_or_new)
+    vim.tbl_map(read_cache, updated_or_new)
     log("All Dictionaries are loaded.")
 end
 

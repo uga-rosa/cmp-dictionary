@@ -1,9 +1,17 @@
 local M = {}
 
+---@param vector string[]
+---@param index integer
+---@param key string
+---@return boolean
 local function ascending_order(vector, index, key)
     return vector[index] >= key
 end
 
+---@param vector unknown[]
+---@param key string
+---@param cb fun(vec: unknown[], idx: integer, key: string): boolean
+---@return integer
 function M.binary_search(vector, key, cb)
     local left = 0
     local right = #vector
@@ -20,13 +28,6 @@ function M.binary_search(vector, key, cb)
     end
 
     return right
-end
-
----@param expr string
----@return string
-function M.expand(expr)
-    ---@diagnostic disable-next-line
-    return vim.fn.expand(expr)
 end
 
 return M

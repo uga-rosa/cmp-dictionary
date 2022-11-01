@@ -19,6 +19,8 @@ M.default = {
 M.config = {}
 M.ready = false
 
+---@param paths string | string[]
+---@return string[]
 local function normalize_paths(paths)
     if type(paths) == "string" then
         return { paths }
@@ -26,6 +28,8 @@ local function normalize_paths(paths)
     return paths
 end
 
+---@param tbl unknown
+---@return unknown
 local function tbl_copy(tbl)
     if type(tbl) ~= "table" then
         return tbl
@@ -37,6 +41,8 @@ local function tbl_copy(tbl)
     return copy
 end
 
+---@param dic table
+---@return table
 local function split_by_comma_of_keys(dic)
     for key, value in pairs(dic) do
         if key:find(",") then
@@ -49,6 +55,7 @@ local function split_by_comma_of_keys(dic)
     return dic
 end
 
+---@param opt table
 function M.setup(opt)
     vim.validate({
         opt = { opt, "table" },
@@ -87,6 +94,8 @@ function M.setup(opt)
     M.ready = true
 end
 
+---@param name string
+---@return unknown
 function M.get(name)
     return M.config[name]
 end
