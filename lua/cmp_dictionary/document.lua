@@ -34,7 +34,7 @@ end
 local function get_document(completion_item, callback)
   local ok, Job = pcall(require, "plenary.job")
   if not ok then
-    vim.notify("[cmp-dictionary]: document feature requires plenary.nvim")
+    vim.notify("[cmp-dictionary] document feature requires plenary.nvim")
     return
   end
 
@@ -48,12 +48,12 @@ local function get_document(completion_item, callback)
   Job:new({
     command = command,
     args = args,
-    on_exit = function(j)
+    on_exit = vim.schedule_wrap(function(j)
       local result = table.concat(j:result(), "\n")
       document_cache:set(word, result)
       completion_item.documentation = result
       callback(completion_item)
-    end,
+    end),
   }):start()
 end
 
