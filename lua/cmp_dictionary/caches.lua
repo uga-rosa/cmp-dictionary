@@ -183,11 +183,6 @@ function items.update()
     return
   end
 
-  if not config.ready then
-    log("Setup has NOT been called.")
-    return
-  end
-
   items.use_cache = {}
   local dictionaries = get_dictionaries()
 

@@ -1,6 +1,6 @@
 local M = {}
 
-M.default = {
+M.config = {
   exact = 2,
   first_case_insensitive = false,
   document = false,
@@ -10,14 +10,12 @@ M.default = {
   capacity = 5,
   debug = false,
 }
-M.config = {}
-M.ready = false
 
 ---@param opt table
 function M.setup(opt)
   vim.validate({ opt = { opt, "table" } })
 
-  M.config = vim.tbl_deep_extend("keep", opt, M.default)
+  M.config = vim.tbl_extend("keep", opt, M.config)
 
   local c = assert(M.config)
   vim.validate({
@@ -30,8 +28,6 @@ function M.setup(opt)
     capacity = { c.capacity, "n" },
     debug = { c.debug, "b" },
   })
-
-  M.ready = true
 end
 
 ---@param name string

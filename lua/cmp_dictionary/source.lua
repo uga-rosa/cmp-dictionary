@@ -9,11 +9,6 @@ function source.new()
   return setmetatable({}, { __index = source })
 end
 
----@return boolean
-function source:is_available()
-  return config.ready
-end
-
 ---@return string
 function source.get_keyword_pattern()
   return [[\k\+]]
