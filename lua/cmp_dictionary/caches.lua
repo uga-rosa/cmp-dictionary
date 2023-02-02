@@ -31,6 +31,17 @@ end
 items.cache = lfu.init(config.get("capacity"))
 items.use_cache = {}
 
+local loading_count = 0
+local function loaded()
+  if loading_count > 0 then
+    loading_count = loading_count - 1
+  end
+end
+
+local function is_finished_loading()
+  return loading_count == 0
+end
+
 ---@param path string
 ---@return string
 ---@return table
@@ -81,6 +92,7 @@ local function create_cache_sync(data)
   items.cache:set(cache.path, cache)
   table.insert(items.use_cache, cache)
   log("Create cache: ", cache.path)
+  loaded()
 end
 
 local create_cache_async = uv.new_work(_create_cache, function(cache)
@@ -88,6 +100,7 @@ local create_cache_async = uv.new_work(_create_cache, function(cache)
   items.cache:set(cache.path, cache)
   table.insert(items.use_cache, cache)
   log("Create cache: ", cache.path)
+  loaded()
 end)
 
 ---@param path string
@@ -140,7 +153,31 @@ local function should_update(dictionaries)
   return updated_or_new
 end
 
+---@return string[]
+local function get_dictionaries()
+  -- Workaround. vim.opt_global returns now a local value.
+  -- https://github.com/neovim/neovim/issues/21506
+  ---@type string[]
+  local global = vim.split(vim.go.dictionary, ",")
+  ---@type string[]
+  local local_ = vim.opt_local.dictionary:get()
+
+  local dictionaries = {}
+  for _, al in ipairs({ global, local_ }) do
+    for _, dict in ipairs(al) do
+      if vim.fn.filereadable(vim.fn.expand(dict)) == 1 then
+        table.insert(dictionaries, dict)
+      end
+    end
+  end
+  return dictionaries
+end
+
 function items.update()
+  if not is_finished_loading() then
+    log("Now loading dictionaries. Please wait a while.")
+    return
+  end
   local buftype = api.nvim_buf_get_option(0, "buftype")
   if buftype ~= "" then
     return
@@ -152,28 +189,7 @@ function items.update()
   end
 
   items.use_cache = {}
-  local dictionaries = {}
-
-  local dic = config.get("dic")
-  if dic.filename then
-    local filename = fn.expand("%:t")
-    dictionaries = dic.filename[filename] or {}
-  end
-  if dic.filepath then
-    local filepath = fn.expand("%:p")
-    for path, dict in pairs(dic.filepath) do
-      if filepath:find(path) then
-        dictionaries = vim.list_extend(dictionaries, dict)
-      end
-    end
-  end
-  if dic.spelllang and vim.bo.spelllang then
-    for lang in vim.gsplit(vim.bo.spelllang, ",") do
-      dictionaries = vim.list_extend(dictionaries, dic.spelllang[lang] or {})
-    end
-  end
-  dictionaries = vim.list_extend(dictionaries, dic[vim.bo.filetype] or {})
-  dictionaries = vim.list_extend(dictionaries, dic["*"] or {})
+  local dictionaries = get_dictionaries()
 
   log("Dictionaries for the current buffer:", dictionaries)
 
@@ -183,6 +199,7 @@ function items.update()
     items.just_updated = true
     return
   end
+  loading_count = #updated_or_new
 
   vim.tbl_map(read_cache, updated_or_new)
   log("All Dictionaries are loaded.")
