@@ -1,173 +1,84 @@
-local source = {}
+local M = {}
 
-local utf8 = require("cmp_dictionary.lib.utf8")
-local caches = require("cmp_dictionary.caches")
-local config = require("cmp_dictionary.config")
-local util = require("cmp_dictionary.util")
-
-function source.new()
-  return setmetatable({}, { __index = source })
+function M.setup(opt)
+  require("cmp_dictionary.config").setup(opt)
 end
 
----@return boolean
-function source:is_available()
-  return config.ready
+function M.update()
+  require("cmp_dictionary.caches").update()
 end
 
----@return string
-function source.get_keyword_pattern()
-  return [[\k\+]]
-end
+---@alias dictionaries table<string, string | string[]>
+---#key is a pattern, value is a value of option 'dictionary'.
 
-local candidate_cache = {
-  req = "",
-  items = {},
-}
+---@param opt { filetype: dictionaries, filepath: dictionaries, spelllang: dictionaries }
+--- Usage:
+--- require("cmp_dictionary").switcher({
+---   filetype = {
+---     lua = "/path/to/lua.dict",
+---     javascript = { "/path/to/js.dict", "/path/to/js2.dict" },
+---   },
+---   filepath = {
+---     ["*xmake.lua"] = { "/path/to/xmake.dict", "/path/to/lua.dict" }
+---     [".tmux*.conf"] = { "/path/to/js.dict", "/path/to/js2.dict" },
+---   },
+---   spelllang = {
+---     en = "/path/to/english.dict",
+---   },
+--  })
+function M.switcher(opt)
+  vim.validate({ opt = { opt, "table" } })
 
----@param str string
----@return boolean
-local function is_capital(str)
-  return str:find("^%u") and true or false
-end
+  local id = vim.api.nvim_create_augroup("cmp_dictionary", {})
 
----@param str string
----@return string
-local function to_lower_first(str)
-  local l = str:gsub("^.", string.lower)
-  return l
-end
-
----@param str string
----@return string
-local function to_upper_first(str)
-  local u = str:gsub("^.", string.upper)
-  return u
-end
-
----@param req string
----@param isIncomplete? boolean
----@return table
----@return boolean?
-local function get_from_caches(req, isIncomplete)
-  local items = {}
-
-  local ok, offset, codepoint
-  ok, offset = pcall(utf8.offset, req, -1)
-  if not ok then
-    return items, isIncomplete
-  end
-  ok, codepoint = pcall(utf8.codepoint, req, offset)
-  if not ok then
-    return items, isIncomplete
-  end
-
-  local req_next = req:sub(1, offset - 1) .. utf8.char(codepoint + 1)
-
-  local max_items = config.get("max_items")
-  for _, cache in pairs(caches.get()) do
-    local start = util.binary_search(cache.item, req, function(vector, index, key)
-      return vector[index].label >= key
-    end)
-    local last = util.binary_search(cache.item, req_next, function(vector, index, key)
-      return vector[index].label >= key
-    end) - 1
-    if start > 0 and last > 0 and start <= last then
-      if max_items > 0 and last >= start + max_items then
-        last = start + max_items
-        isIncomplete = true
+  vim.api.nvim_create_autocmd("User", {
+    group = id,
+    pattern = "cmp_dictionary",
+    callback = function()
+      if opt.filetype then
+        vim.opt_local.dictionary:append(opt.filetype[vim.bo.filetype] or "")
       end
-      for i = start, last do
-        local item = cache.item[i]
-        item.label = item._label or item.label
-        table.insert(items, item)
+      if opt.filepath then
+        local fullpath = vim.fn.expand("%:p")
+        for path, dict in pairs(opt.filepath) do
+          if fullpath:find(path) then
+            vim.opt_local.dictionary:append(dict)
+          end
+        end
       end
-    end
-  end
-  return items, isIncomplete
-end
-
----@param req string
----@param isIncomplete? boolean
----@return table
-function source.get_candidate(req, isIncomplete)
-  if candidate_cache.req == req then
-    return { items = candidate_cache.items, isIncomplete = isIncomplete }
-  end
-
-  local items
-  items, isIncomplete = get_from_caches(req, isIncomplete)
-
-  if config.get("first_case_insensitive") then
-    if is_capital(req) then
-      for _, item in ipairs(get_from_caches(to_lower_first(req))) do
-        item._label = item._label or item.label
-        item.label = to_upper_first(item._label)
-        table.insert(items, item)
+      if opt.spelllang then
+        for _, sl in ipairs(vim.opt.spelllang:get()) do
+          vim.opt_local.dictionary:append(opt.spelllang[sl] or "")
+        end
       end
-    else
-      for _, item in ipairs(get_from_caches(to_upper_first(req))) do
-        item._label = item._label or item.label
-        item.label = to_lower_first(item._label)
-        table.insert(items, item)
-      end
-    end
+      M.update()
+    end,
+  })
+
+  if opt.filetype then
+    vim.api.nvim_create_autocmd("FileType", {
+      group = id,
+      pattern = vim.tbl_keys(opt.filetype),
+      command = "do User cmp_dictionary",
+    })
   end
 
-  candidate_cache.req = req
-  candidate_cache.items = items
-
-  return { items = items, isIncomplete = isIncomplete }
-end
-
----@param request cmp.SourceCompletionApiParams
----@param callback fun(response: lsp.CompletionResponse|nil)
-function source:complete(request, callback)
-  if caches.is_just_updated() then
-    candidate_cache = {}
-  end
-  local exact = config.get("exact")
-
-  ---@type string
-  local line = request.context.cursor_before_line
-  local offset = request.offset
-  line = line:sub(offset)
-  if line == "" then
-    return
+  if opt.filepath then
+    vim.api.nvim_create_autocmd("BufEnter", {
+      group = id,
+      command = "do User cmp_dictionary",
+    })
   end
 
-  local req, isIncomplete
-  if exact > 0 then
-    local line_len = utf8.len(line)
-    if line_len <= exact then
-      req = line
-      isIncomplete = line_len < exact
-    else
-      local last = exact
-      if line_len ~= #line then
-        last = utf8.offset(line, exact + 1) - 1
-      end
-      req = line:sub(1, last)
-      isIncomplete = false
-    end
-  else
-    -- must be -1
-    req = line
-    isIncomplete = true
+  if opt.spelllang then
+    vim.api.nvim_create_autocmd("OptionSet", {
+      group = id,
+      pattern = "spelllang",
+      command = "do User cmp_dictionary",
+    })
   end
 
-  callback(source.get_candidate(req, isIncomplete))
+  vim.cmd("do User cmp_dictionary")
 end
 
-function source:resolve(completion_item, callback)
-  require("cmp_dictionary.document")(completion_item, callback)
-end
-
-function source.setup(opt)
-  config.setup(opt)
-end
-
-function source.update()
-  caches.update()
-end
-
-return source
+return M
