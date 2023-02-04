@@ -20,9 +20,12 @@ cmp-dictionary ~
 Dictionary completion source for nvim-cmp.
 <https://github.com/hrsh7th/nvim-cmp>
 
-Refer to the value of |'dictionary'| to load the dictionary and provide it as a
-completion candidates to nvim-cmp. The |'dictionary'| has global and buffer
-local values, but this plugin refers to both.
+This plugins refers to the value of |'dictionary'| to load dictionaries and
+provide words in them as a completion candidates to nvim-cmp. The
+|'dictionary'| has global and buffer local values, but this plugin uses both.
+It is recommended to register basic dictionaries that you always want to use
+globally, and do dictionaries that are only used in special cases locally.
+See also |cmp-dictionary-switcher|.
 
 
 Requirements
@@ -181,11 +184,13 @@ Utilities					*cmp-dictionary-utilities*
 
 					*cmp-dictionary-utilities-switcher*
 switcher({opts}) ~
-	Automatically switches |'dictionary'| according to conditions and
-	loads dictionaries.
-	- The key `filetype` of {opts} is compared to |'filetype'|.
-	- The key `filepath` of {opts} is compared to `expand("%:p")`.
-	- The key `spelllang` of {opts} is compared to |'spelllang'|.
+	{opts}: table<string, table<string, string>>
+	Automatically set locally a option |'dictionary'|, and loads
+	dictionaries.
+	- The `filetype` of {opts} has keys are compared to |'filetype'|.
+	- The `filepath` of {opts} has keys of Lua patterns, which are
+	  compared to `expand("%:p")`.
+	- The `spelllang` of {opts} has keys are compared to |'spelllang'|.
 
 	Usage example:
 >
