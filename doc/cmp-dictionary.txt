@@ -43,10 +43,9 @@ Commands					*cmp-dictionary-commands*
 :CmpDictionaryUpdate ~
 	In lua, `require("cmp_dictionary").update()`
 
-	Updates the dictionary. If you use |cmp-dictionary-switcher|, you
-	don't need to hit this command. If you do not use a switcher, run this
-	command once for the first time and then every time you update the
-	|'dictionary'|.
+	Updates the dictionary. It is basically not necessary for the user to
+	use it directly, as it is executed automatically by hooking into the
+	updating of the |'dictionary'|.
 
 
 ==============================================================================
