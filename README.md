@@ -29,30 +29,32 @@ require("cmp").setup({
   }
 })
 
-require("cmp_dictionary").setup({
-  dic = {
-    ["*"] = { "/usr/share/dict/words" },
-    ["lua"] = "path/to/lua.dic",
-    ["javascript,typescript"] = { "path/to/js.dic", "path/to/js2.dic" },
-    filename = {
-      ["xmake.lua"] = { "path/to/xmake.dic", "path/to/lua.dic" },
-    },
-    filepath = {
-      ["%.tmux.*%.conf"] = "path/to/tmux.dic"
-    },
-    spelllang = {
-      en = "path/to/english.dic",
-    },
-  },
+local dict = require("cmp_dictionary")
+
+dict.setup({
   -- The following are default values.
   exact = 2,
   first_case_insensitive = false,
   document = false,
   document_command = "wn %s -over",
-  async = false, 
+  async = false,
   max_items = -1,
   capacity = 5,
   debug = false,
+})
+
+dict.switcher({
+  filetype = {
+    lua = "/path/to/lua.dict",
+    javascript = { "/path/to/js.dict", "/path/to/js2.dict" },
+  },
+  filepath = {
+    [".*xmake.lua"] = { "/path/to/xmake.dict", "/path/to/lua.dict" },
+    ["%.tmux.*%.conf"] = { "/path/to/js.dict", "/path/to/js2.dict" },
+  },
+  spelllang = {
+    en = "/path/to/english.dict",
+  },
 })
 ```
 

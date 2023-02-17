@@ -200,7 +200,7 @@ switcher({opts}) ~
 	    javascript = { "/path/to/js.dict", "/path/to/js2.dict" },
 	  },
 	  filepath = {
-	    [".*xmake.lua"] = { "/path/to/xmake.dict", "/path/to/lua.dict" }
+	    [".*xmake.lua"] = { "/path/to/xmake.dict", "/path/to/lua.dict" },
 	    ["%.tmux.*%.conf"] = { "/path/to/js.dict", "/path/to/js2.dict" },
 	  },
 	  spelllang = {
