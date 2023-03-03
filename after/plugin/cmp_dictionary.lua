@@ -14,3 +14,5 @@ vim.api.nvim_create_autocmd("OptionSet", {
   pattern = "dictionary",
   callback = update,
 })
+
+update()
