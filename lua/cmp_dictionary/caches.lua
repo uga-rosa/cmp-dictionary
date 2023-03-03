@@ -1,3 +1,5 @@
+local util = require("cmp_dictionary.util")
+
 ---@alias dic_data {item: table, index: table}
 
 ---@class items
@@ -173,7 +175,7 @@ local function get_dictionaries()
   return dictionaries
 end
 
-function items.update()
+local function update()
   if not is_finished_loading() then
     log("Now loading dictionaries. Please wait a while.")
     return
@@ -198,6 +200,10 @@ function items.update()
 
   vim.tbl_map(read_cache, updated_or_new)
   log("All Dictionaries are loaded.")
+end
+
+function items.update()
+  util.debounce(100, update)
 end
 
 ---Get now candidates

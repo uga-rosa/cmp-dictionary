@@ -1,3 +1,5 @@
+local uv = vim.loop
+
 local M = {}
 
 ---@param vector string[]
@@ -28,6 +30,25 @@ function M.binary_search(vector, key, cb)
   end
 
   return right
+end
+
+local timer
+
+function M.debounce(time, callback)
+  if timer then
+    timer:stop()
+    timer:close()
+  end
+  timer = uv.new_timer()
+  timer:start(
+    time,
+    0,
+    vim.schedule_wrap(function()
+      timer:stop()
+      timer:close()
+      callback()
+    end)
+  )
 end
 
 return M
