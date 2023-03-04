@@ -118,6 +118,7 @@ end
 ---@param callback fun(response: lsp.CompletionResponse|nil)
 function source:complete(request, callback)
   if caches.is_just_updated() then
+    -- Clear the cache since the dictionary has been updated.
     candidate_cache = {}
   end
   local exact = config.get("exact")
