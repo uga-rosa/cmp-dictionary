@@ -36,16 +36,11 @@ end
 local create_cache = Async.async(function(path)
   local name = fn.fnamemodify(path, ":t")
   local buffer, stat = read_file_sync(path)
-  local data = {
-    name = name,
-    path = path,
-    buffer = buffer,
-    mtime = stat.mtime.sec,
-  }
+  local mtime = stat.mtime.sec
 
   local item = {}
-  local detail = ("belong to `%s`"):format(data.name)
-  for w in vim.gsplit(data.buffer, "%s+") do
+  local detail = ("belong to `%s`"):format(name)
+  for w in vim.gsplit(buffer, "%s+") do
     if w ~= "" then
       table.insert(item, { label = w, detail = detail })
     end
@@ -56,11 +51,11 @@ local create_cache = Async.async(function(path)
 
   local cache = {
     item = item,
-    mtime = data.mtime,
-    path = data.path,
+    mtime = mtime,
+    path = path,
   }
 
-  dictCache:set(data.path, cache)
+  dictCache:set(path, cache)
   table.insert(dictionaries, cache)
 end)
 
