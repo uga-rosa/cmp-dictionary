@@ -15,7 +15,7 @@ local items = {}
 ---@field path string
 
 ---@type DictionaryData[]
-local dictionaries = {}
+local dictionary_data = {}
 local just_updated = false
 local dictCache = lfu.init(config.get("capacity"))
 
@@ -56,7 +56,7 @@ local create_cache = Async.async(function(path)
   }
 
   dictCache:set(path, cache)
-  table.insert(dictionaries, cache)
+  table.insert(dictionary_data, cache)
 end)
 
 ---@param path string
@@ -93,17 +93,17 @@ local function get_dictionaries()
 end
 
 ---Filter to keep only dictionaries that have been updated or have not yet been cached.
----@param dict string[]
+---@param dictionaries string[]
 ---@return string[]
-local function need_to_load(dict)
+local function need_to_load(dictionaries)
   local updated_or_new = {}
-  for _, dic in ipairs(dict) do
-    local path = fn.expand(dic)
+  for _, dict in ipairs(dictionaries) do
+    local path = fn.expand(dict)
     if util.bool_fn.filereadable(path) then
       local mtime = fn.getftime(path)
       local cache = dictCache:get(path)
       if cache and cache.mtime == mtime then
-        table.insert(dict, cache)
+        table.insert(dictionary_data, cache)
       else
         table.insert(updated_or_new, path)
       end
@@ -118,7 +118,7 @@ local function update()
     return
   end
 
-  dictionaries = {}
+  dictionary_data = {}
   local dict = get_dictionaries()
 
   local updated_or_new = need_to_load(dict)
@@ -138,7 +138,7 @@ end
 ---Get now candidates
 ---@return DictionaryData[]
 function items.get()
-  return dictionaries
+  return dictionary_data
 end
 
 function items.is_just_updated()
