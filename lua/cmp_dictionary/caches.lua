@@ -132,7 +132,7 @@ local function update()
 end
 
 function items.update()
-  util.debounce(100, update)
+  util.debounce("update", update, 100)
 end
 
 ---Get now candidates

@@ -32,22 +32,24 @@ function M.binary_search(vector, key, cb)
   return right
 end
 
-local timer
+local timer = {}
 
-function M.debounce(timeout, callback)
-  if timer then
-    timer:stop()
-    timer:close()
-    timer = nil
+local function stop(name)
+  if timer[name] then
+    timer[name]:stop()
+    timer[name]:close()
+    timer[name] = nil
   end
-  timer = uv.new_timer()
-  timer:start(
+end
+
+function M.debounce(name, callback, timeout)
+  stop(name)
+  timer[name] = uv.new_timer()
+  timer[name]:start(
     timeout,
     0,
     vim.schedule_wrap(function()
-      timer:stop()
-      timer:close()
-      timer = nil
+      stop(name)
       callback()
     end)
   )
