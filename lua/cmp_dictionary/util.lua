@@ -34,18 +34,20 @@ end
 
 local timer
 
-function M.debounce(time, callback)
+function M.debounce(timeout, callback)
   if timer then
     timer:stop()
     timer:close()
+    timer = nil
   end
   timer = uv.new_timer()
   timer:start(
-    time,
+    timeout,
     0,
     vim.schedule_wrap(function()
       timer:stop()
       timer:close()
+      timer = nil
       callback()
     end)
   )
