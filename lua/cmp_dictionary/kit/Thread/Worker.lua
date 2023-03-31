@@ -18,7 +18,7 @@ end
 ---Call worker function.
 ---@return cmp_dictionary.kit.Async.AsyncTask
 function Worker:__call(...)
-  local args = { ... }
+  local args_ = { ... }
   return AsyncTask.new(function(resolve, reject)
     uv.new_work(function(runner, args, option)
       args = vim.mpack.decode(args)
@@ -51,7 +51,7 @@ function Worker:__call(...)
       end
     end):queue(
       self.runner,
-      vim.mpack.encode(args),
+      vim.mpack.encode(args_),
       vim.mpack.encode({
         cwd = uv.cwd(),
       })
