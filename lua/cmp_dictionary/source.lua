@@ -69,7 +69,7 @@ end
 
 ---@param request cmp.SourceCompletionApiParams
 ---@param callback fun(response: lsp.CompletionResponse|nil)
-function source:complete(request, callback)
+function source.complete(_, request, callback)
   if caches.is_just_updated() then
     -- Clear the cache since the dictionary has been updated.
     candidate_cache = {}
@@ -107,7 +107,7 @@ function source:complete(request, callback)
   callback(source.get_candidate(req, isIncomplete))
 end
 
-function source:resolve(completion_item, callback)
+function source.resolve(_, completion_item, callback)
   require("cmp_dictionary.document")(completion_item, callback)
 end
 
