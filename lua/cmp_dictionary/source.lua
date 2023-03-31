@@ -1,9 +1,9 @@
 local source = {}
 
 local utf8 = require("cmp_dictionary.lib.utf8")
-local caches = require("cmp_dictionary.caches")
 local config = require("cmp_dictionary.config")
-local util = require("cmp_dictionary.util")
+local caches = require("cmp_dictionary.caches")
+local db = require("cmp_dictionary.db")
 
 function source.new()
   return setmetatable({}, { __index = source })
@@ -40,49 +40,7 @@ local function to_upper_first(str)
 end
 
 ---@param req string
----@param isIncomplete? boolean
----@return table
----@return boolean?
-local function get_from_caches(req, isIncomplete)
-  local items = {}
-
-  local ok, offset, codepoint
-  ok, offset = pcall(utf8.offset, req, -1)
-  if not ok then
-    return items, isIncomplete
-  end
-  ok, codepoint = pcall(utf8.codepoint, req, offset)
-  if not ok then
-    return items, isIncomplete
-  end
-
-  local req_next = req:sub(1, offset - 1) .. utf8.char(codepoint + 1)
-
-  local max_items = config.get("max_items")
-  for _, cache in pairs(caches.get()) do
-    local start = util.binary_search(cache.item, req, function(vector, index, key)
-      return vector[index].label >= key
-    end)
-    local last = util.binary_search(cache.item, req_next, function(vector, index, key)
-      return vector[index].label >= key
-    end) - 1
-    if start > 0 and last > 0 and start <= last then
-      if max_items > 0 and last >= start + max_items then
-        last = start + max_items
-        isIncomplete = true
-      end
-      for i = start, last do
-        local item = cache.item[i]
-        item.label = item._label or item.label
-        table.insert(items, item)
-      end
-    end
-  end
-  return items, isIncomplete
-end
-
----@param req string
----@param isIncomplete? boolean
+---@param isIncomplete boolean
 ---@return table
 function source.get_candidate(req, isIncomplete)
   if candidate_cache.req == req then
@@ -90,21 +48,16 @@ function source.get_candidate(req, isIncomplete)
   end
 
   local items
-  items, isIncomplete = get_from_caches(req, isIncomplete)
+  local request = config.get("sqlite") and db.request or caches.request
+  items = request(req, isIncomplete)
 
   if config.get("first_case_insensitive") then
+    local pre, post = to_upper_first, to_lower_first
     if is_capital(req) then
-      for _, item in ipairs(get_from_caches(to_lower_first(req))) do
-        item._label = item._label or item.label
-        item.label = to_upper_first(item._label)
-        table.insert(items, item)
-      end
-    else
-      for _, item in ipairs(get_from_caches(to_upper_first(req))) do
-        item._label = item._label or item.label
-        item.label = to_lower_first(item._label)
-        table.insert(items, item)
-      end
+      pre, post = post, pre
+    end
+    for _, item in ipairs(request(pre(req), isIncomplete)) do
+      table.insert(items, { label = post(item.label), detail = item.detail })
     end
   end
 

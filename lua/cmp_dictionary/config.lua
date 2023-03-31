@@ -9,6 +9,7 @@ M.config = {
   max_items = -1,
   capacity = 5,
   debug = false,
+  sqlite = false,
 }
 
 ---@param opt table

@@ -2,6 +2,38 @@ local uv = vim.loop
 
 local M = {}
 
+---@param path string
+---@return string
+---@return table
+function M.read_file_sync(path)
+  -- 292 == 0x444
+  local fd = assert(uv.fs_open(path, "r", 292))
+  local stat = assert(uv.fs_fstat(fd))
+  local buffer = assert(uv.fs_read(fd, stat.size, 0))
+  uv.fs_close(fd)
+  return buffer, stat
+end
+
+---@return string[]
+function M.get_dictionaries()
+  -- Workaround. vim.opt_global returns now a local value.
+  -- https://github.com/neovim/neovim/issues/21506
+  ---@type string[]
+  local global = vim.split(vim.go.dictionary, ",")
+  ---@type string[]
+  local local_ = vim.opt_local.dictionary:get()
+
+  local dict = {}
+  for _, al in ipairs({ global, local_ }) do
+    for _, d in ipairs(al) do
+      if vim.fn.filereadable(vim.fn.expand(d)) == 1 then
+        table.insert(dict, d)
+      end
+    end
+  end
+  return dict
+end
+
 ---@param vector string[]
 ---@param index integer
 ---@param key string
