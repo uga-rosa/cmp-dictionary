@@ -10,7 +10,8 @@ The easiest way to add your favorite completion candidates to nvim-cmp.
 
 - neovim >= 0.7
 - nvim-cmp
-- plenary.nvim (only document feature)
+- [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) (only document feature)
+- [sqlite.lua](https://github.com/kkharji/sqlite.lua) (only if sqlite option is enabled)
 
 # Setting
 
@@ -38,6 +39,7 @@ dict.setup({
   document = false,
   document_command = "wn %s -over",
   async = false,
+  sqlite = false,
   max_items = -1,
   capacity = 5,
   debug = false,
