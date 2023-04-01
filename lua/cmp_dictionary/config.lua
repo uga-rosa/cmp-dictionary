@@ -6,10 +6,10 @@ M.config = {
   document = false,
   document_command = "wn %s -over",
   async = false,
+  sqlite = false,
   max_items = -1,
   capacity = 5,
   debug = false,
-  sqlite = false,
 }
 
 ---@param opt table

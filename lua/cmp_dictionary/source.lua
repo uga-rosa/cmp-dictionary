@@ -49,7 +49,7 @@ function source.get_candidate(req, isIncomplete)
 
   local items
   local request = config.get("sqlite") and db.request or caches.request
-  items = request(req, isIncomplete)
+  items, isIncomplete = request(req, isIncomplete)
 
   if config.get("first_case_insensitive") then
     local pre, post = to_upper_first, to_lower_first
@@ -108,7 +108,11 @@ function source.complete(_, request, callback)
 end
 
 function source.resolve(_, completion_item, callback)
-  require("cmp_dictionary.document")(completion_item, callback)
+  if config.get("sqlite") then
+    db.document(completion_item, callback)
+  else
+    require("cmp_dictionary.document")(completion_item, callback)
+  end
 end
 
 return source

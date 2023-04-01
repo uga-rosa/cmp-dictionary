@@ -73,6 +73,7 @@ If you use the default settings, this plugin will work without calling setup.
 	  document = false,
 	  document_command = "wn %s -over",
 	  async = false, 
+	  sqlite = false,
 	  max_items = 1000,
 	  capacity = 5,
 	  debug = false,
@@ -148,6 +149,17 @@ async ~
 
 	This feature uses |vim.mpack|. If an error occurs, the neovim version
 	is out of date.
+
+
+							*cmp-dictionary-sqlite*
+sqlite ~
+	boolean (default: false)
+
+	If true, use sqlite3 database to manage items. You will need the
+	following.
+
+	- kkharji/sqlite.lua (https://github.com/kkharji/sqlite.lua)
+	- sqlite (https://sqlite.org/index.html)
 
 
                                                       *cmp-dictionary-max_items*

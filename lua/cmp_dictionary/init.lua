@@ -1,3 +1,5 @@
+local config = require("cmp_dictionary.config")
+
 local M = {}
 
 function M.setup(opt)
@@ -5,7 +7,11 @@ function M.setup(opt)
 end
 
 function M.update()
-  require("cmp_dictionary.caches").update()
+  if config.get("sqlite") then
+    require("cmp_dictionary.db").update()
+  else
+    require("cmp_dictionary.caches").update()
+  end
 end
 
 ---@alias dictionaries table<string, string | string[]>
