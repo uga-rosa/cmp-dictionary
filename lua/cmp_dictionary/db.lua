@@ -64,7 +64,9 @@ local function need_to_load(db)
     if util.bool_fn.filereadable(path) then
       local mtime = fn.getftime(path)
       local mtime_cache = db:select("dictionary", { select = "mtime", where = { filepath = path } })
-      if mtime_cache[1] == nil or mtime_cache[1].mtime ~= mtime then
+      if mtime_cache[1] and mtime_cache[1].mtime == mtime then
+        db:eval("UPDATE dictionary SET valid = 1 WHERE filepath = ?", path)
+      else
         table.insert(updated_or_new, path)
       end
     end
@@ -74,11 +76,6 @@ end
 
 local read = Async.async(function(db, filepath)
   local buffer, stat = util.read_file_sync(filepath)
-  local mtime = stat.mtime.sec
-  db:update("dictionary", {
-    where = { filepath = filepath },
-    set = { mtime = mtime },
-  })
 
   local name = fn.fnamemodify(filepath, ":t")
   local detail = string.format("belong to `%s`", name)
@@ -89,10 +86,18 @@ local read = Async.async(function(db, filepath)
     end
   end
   db:insert("items", items)
+
+  -- Index for fast search
   if SQLite:exists_index("labelindex") then
     db:execute("DROP INDEX labelindex")
   end
   db:execute("CREATE INDEX labelindex ON items(label)")
+
+  -- If there is no data matching where, it automatically switches to insert.
+  db:update("dictionary", {
+    set = { mtime = stat.mtime.sec, valid = 1 },
+    where = { filepath = filepath },
+  })
 end)
 
 local function update(db)
@@ -100,6 +105,8 @@ local function update(db)
   if buftype ~= "" then
     return
   end
+
+  db:execute("UPDATE dictionary SET valid = 0")
 
   for _, filepath in ipairs(need_to_load(db)) do
     read(db, filepath)
@@ -149,10 +156,7 @@ function DB.document(completion_item, callback)
   local label = completion_item.label
   require("cmp_dictionary.document")(completion_item, function(completion_item_)
     if completion_item_ and completion_item_.documentation then
-      db:eval(
-        "UPDATE items SET documentation = :a WHERE label = :b",
-        { a = completion_item_.documentation, b = label }
-      )
+      db:eval("UPDATE items SET documentation = :a WHERE label = :b", { a = completion_item_.documentation, b = label })
     end
     callback(completion_item_)
   end)
