@@ -155,8 +155,9 @@ async ~
 sqlite ~
 	boolean (default: false)
 
-	If true, use sqlite3 database to manage items. You will need the
-	following.
+	If true, use sqlite3 database to manage items. Basically, false is
+	faster. If you have a huge dictionary and it takes a long time to
+	initialize, you may want to try it. You will need the following.
 
 	- kkharji/sqlite.lua (https://github.com/kkharji/sqlite.lua)
 	- sqlite (https://sqlite.org/index.html)
