@@ -1,14 +1,12 @@
 local util = require("cmp_dictionary.util")
-local Async = require("cmp_dictionary.kit.Async")
 local lfu = require("cmp_dictionary.lfu")
 local config = require("cmp_dictionary.config")
 local utf8 = require("cmp_dictionary.lib.utf8")
-
-local fn = vim.fn
-local api = vim.api
+local Async = require("cmp_dictionary.kit.Async")
+local Worker = require("cmp_dictionary.kit.Thread.Worker")
 
 ---@class DictionaryData
----@field item lsp.CompletionItem
+---@field items lsp.CompletionItem[]
 ---@field mtime integer
 ---@field path string
 
@@ -20,78 +18,76 @@ local Caches = {
 local just_updated = false
 local dictCache = lfu.init(config.get("capacity"))
 
----Create dictionary data from buffers
----@param path string
-local create_cache = Async.async(function(path)
-  local name = fn.fnamemodify(path, ":t")
-  local buffer, stat = util.read_file_sync(path)
-  local mtime = stat.mtime.sec
-
-  local item = {}
-  local detail = ("belong to `%s`"):format(name)
-  for w in vim.gsplit(buffer, "%s+") do
-    if w ~= "" then
-      table.insert(item, { label = w, detail = detail })
-    end
-  end
-  table.sort(item, function(item1, item2)
-    return item1.label < item2.label
-  end)
-
-  local cache = {
-    item = item,
-    mtime = mtime,
-    path = path,
-  }
-
-  dictCache:set(path, cache)
-  table.insert(Caches.valid, cache)
-end)
-
----@param path string
-local function read_cache(path)
-  if config.get("async") then
-    create_cache(path)
-  else
-    create_cache(path):sync()
-  end
-end
-
 ---Filter to keep only dictionaries that have been updated or have not yet been cached.
----@return string[]
+---@return {path: string, mtime: integer}[]
 local function need_to_load()
   local dictionaries = util.get_dictionaries()
   local updated_or_new = {}
   for _, dict in ipairs(dictionaries) do
-    local path = fn.expand(dict)
+    local path = vim.fn.expand(dict)
     if util.bool_fn.filereadable(path) then
-      local mtime = fn.getftime(path)
+      local mtime = vim.fn.getftime(path)
       local cache = dictCache:get(path)
       if cache and cache.mtime == mtime then
         table.insert(Caches.valid, cache)
       else
-        table.insert(updated_or_new, path)
+        table.insert(updated_or_new, { path = path, mtime = mtime })
       end
     end
   end
   return updated_or_new
 end
 
+---Create dictionary data from buffers
+---@param path string
+---@param name string
+---@return lsp.CompletionItem[] items
+local read_items = Worker.new(function(path, name)
+  local buffer = require("cmp_dictionary.util").read_file_sync(path)
+
+  local items = {}
+  local detail = ("belong to `%s`"):format(name)
+  for w in vim.gsplit(buffer, "%s+") do
+    if w ~= "" then
+      table.insert(items, { label = w, detail = detail })
+    end
+  end
+  table.sort(items, function(item1, item2)
+    return item1.label < item2.label
+  end)
+
+  return items
+end)
+
+---@param path string
+---@param mtime integer
+---@return cmp_dictionary.kit.Async.AsyncTask
+local function cache_update(path, mtime)
+  local name = vim.fn.fnamemodify(path, ":t")
+  return read_items(path, name):next(function(items)
+    local cache = {
+      items = items,
+      mtime = mtime,
+      path = path,
+    }
+    dictCache:set(path, cache)
+    table.insert(Caches.valid, cache)
+  end)
+end
+
 local function update()
-  local buftype = api.nvim_buf_get_option(0, "buftype")
+  local buftype = vim.api.nvim_buf_get_option(0, "buftype")
   if buftype ~= "" then
     return
   end
 
   Caches.valid = {}
 
-  local updated_or_new = need_to_load()
-  if #updated_or_new == 0 then
+  Async.all(vim.tbl_map(function(n)
+    return cache_update(n.path, n.mtime)
+  end, need_to_load())):next(function()
     just_updated = true
-    return
-  end
-
-  vim.tbl_map(read_cache, updated_or_new)
+  end)
 end
 
 function Caches.update()
@@ -120,10 +116,10 @@ function Caches.request(req, isIncomplete)
 
   local max_items = config.get("max_items")
   for _, cache in pairs(Caches.valid) do
-    local start = util.binary_search(cache.item, req, function(vector, index, key)
+    local start = util.binary_search(cache.items, req, function(vector, index, key)
       return vector[index].label >= key
     end)
-    local last = util.binary_search(cache.item, req_next, function(vector, index, key)
+    local last = util.binary_search(cache.items, req_next, function(vector, index, key)
       return vector[index].label >= key
     end) - 1
     if start > 0 and last > 0 and start <= last then
@@ -132,7 +128,7 @@ function Caches.request(req, isIncomplete)
         isIncomplete = true
       end
       for i = start, last do
-        local item = cache.item[i]
+        local item = cache.items[i]
         table.insert(items, item)
       end
     end

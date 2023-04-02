@@ -3,15 +3,14 @@ local uv = vim.loop
 local M = {}
 
 ---@param path string
----@return string
----@return table
+---@return string buffer
 function M.read_file_sync(path)
   -- 292 == 0x444
   local fd = assert(uv.fs_open(path, "r", 292))
   local stat = assert(uv.fs_fstat(fd))
   local buffer = assert(uv.fs_read(fd, stat.size, 0))
   uv.fs_close(fd)
-  return buffer, stat
+  return buffer
 end
 
 ---@return string[]

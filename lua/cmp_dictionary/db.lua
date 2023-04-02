@@ -1,10 +1,11 @@
 local util = require("cmp_dictionary.util")
 local config = require("cmp_dictionary.config")
 local Async = require("cmp_dictionary.kit.Async")
-local api = vim.api
-local fn = vim.fn
+local Worker = require("cmp_dictionary.kit.Thread.Worker")
 
 local SQLite = {}
+
+local just_updated = false
 
 ---@return table db
 function SQLite:open()
@@ -56,61 +57,73 @@ function SQLite:exists_index(name)
   return type(result) == "table" and #result == 1
 end
 
+function SQLite:index(tbl_name, column)
+  local name = column .. "index"
+  if SQLite:exists_index(name) then
+    self.db:execute("DROP INDEX " .. name)
+  end
+  self.db:execute(("CREATE INDEX %s ON %s(%s)"):format(name, tbl_name, column))
+end
+
 local function need_to_load(db)
   local dictionaries = util.get_dictionaries()
   local updated_or_new = {}
   for _, dictionary in ipairs(dictionaries) do
-    local path = fn.expand(dictionary)
+    local path = vim.fn.expand(dictionary)
     if util.bool_fn.filereadable(path) then
-      local mtime = fn.getftime(path)
+      local mtime = vim.fn.getftime(path)
       local mtime_cache = db:select("dictionary", { select = "mtime", where = { filepath = path } })
       if mtime_cache[1] and mtime_cache[1].mtime == mtime then
         db:eval("UPDATE dictionary SET valid = 1 WHERE filepath = ?", path)
       else
-        table.insert(updated_or_new, path)
+        table.insert(updated_or_new, { path = path, mtime = mtime })
       end
     end
   end
   return updated_or_new
 end
 
-local read = Async.async(function(db, filepath)
-  local buffer, stat = util.read_file_sync(filepath)
+local read_items = Worker.new(function(path, name)
+  local buffer = require("cmp_dictionary.util").read_file_sync(path)
 
-  local name = fn.fnamemodify(filepath, ":t")
   local detail = string.format("belong to `%s`", name)
   local items = {}
   for w in vim.gsplit(buffer, "%s+") do
     if w ~= "" then
-      table.insert(items, { label = w, detail = detail, filepath = filepath })
+      table.insert(items, { label = w, detail = detail, filepath = path })
     end
   end
-  db:insert("items", items)
-
-  -- Index for fast search
-  if SQLite:exists_index("labelindex") then
-    db:execute("DROP INDEX labelindex")
-  end
-  db:execute("CREATE INDEX labelindex ON items(label)")
-
-  -- If there is no data matching where, it automatically switches to insert.
-  db:update("dictionary", {
-    set = { mtime = stat.mtime.sec, valid = 1 },
-    where = { filepath = filepath },
-  })
+  return items
 end)
 
 local function update(db)
-  local buftype = api.nvim_buf_get_option(0, "buftype")
+  local buftype = vim.api.nvim_buf_get_option(0, "buftype")
   if buftype ~= "" then
     return
   end
 
   db:execute("UPDATE dictionary SET valid = 0")
 
-  for _, filepath in ipairs(need_to_load(db)) do
-    read(db, filepath)
-  end
+  Async.all(vim.tbl_map(function(n)
+    local path, mtime = n.path, n.mtime
+    local name = vim.fn.fnamemodify(path, ":t")
+    return read_items(path, name):next(function(items)
+      db:delete("items", { where = { filepath = path } })
+      db:insert("items", items)
+
+      -- Index for fast search
+      SQLite:index("items", "label")
+      SQLite:index("items", "filepath")
+
+      -- If there is no data matching where, it automatically switches to insert.
+      db:update("dictionary", {
+        set = { mtime = mtime, valid = 1 },
+        where = { filepath = path },
+      })
+    end)
+  end, need_to_load(db))):next(function()
+    just_updated = true
+  end)
 end
 
 local DB = {}
@@ -142,6 +155,14 @@ function DB.request(req, _)
   else
     return {}, false
   end
+end
+
+function DB.is_just_updated()
+  if just_updated then
+    just_updated = false
+    return true
+  end
+  return false
 end
 
 ---@param completion_item lsp.CompletionItem

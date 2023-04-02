@@ -139,18 +139,6 @@ document_command ~
 	be '{"wn", "%s", "-over"}'.
 
 
-							*cmp-dictionary-async*
-async ~
-	boolean (default: false)
-
-	If true, perform the initialization in a separate thread. If you are
-	using a very large dictionary and the body operation is blocked, try
-	this.
-
-	This feature uses |vim.mpack|. If an error occurs, the neovim version
-	is out of date.
-
-
 							*cmp-dictionary-sqlite*
 sqlite ~
 	boolean (default: false)
