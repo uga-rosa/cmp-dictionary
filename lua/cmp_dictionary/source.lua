@@ -70,10 +70,17 @@ end
 ---@param request cmp.SourceCompletionApiParams
 ---@param callback fun(response: lsp.CompletionResponse|nil)
 function source.complete(_, request, callback)
-  if caches.is_just_updated() then
-    -- Clear the cache since the dictionary has been updated.
-    candidate_cache = {}
+  -- Clear the cache since the dictionary has been updated.
+  if config.get("sqlite") then
+    if db.is_just_updated() then
+      candidate_cache = {}
+    end
+  else
+    if caches.is_just_updated() then
+      candidate_cache = {}
+    end
   end
+
   local exact = config.get("exact")
 
   ---@type string
