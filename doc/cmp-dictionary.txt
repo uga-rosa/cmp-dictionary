@@ -150,6 +150,8 @@ sqlite ~
 	- kkharji/sqlite.lua (https://github.com/kkharji/sqlite.lua)
 	- sqlite (https://sqlite.org/index.html)
 
+	The database path is `stdpath('data') . '/cmp-dictionary.sqlite3'`
+
 
                                                       *cmp-dictionary-max_items*
 max_items ~
