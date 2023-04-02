@@ -53,6 +53,7 @@ end
 
 function SQLite:exists_index(name)
   self:open()
+  -- Can't use db:select() for sqlite_master.
   local result = self.db:eval("SELECT * FROM sqlite_master WHERE type = 'index' AND name = ?", name)
   return type(result) == "table" and #result == 1
 end
@@ -74,7 +75,10 @@ local function need_to_load(db)
       local mtime = vim.fn.getftime(path)
       local mtime_cache = db:select("dictionary", { select = "mtime", where = { filepath = path } })
       if mtime_cache[1] and mtime_cache[1].mtime == mtime then
-        db:eval("UPDATE dictionary SET valid = 1 WHERE filepath = ?", path)
+        db:update("dictionary", {
+          set = { valid = 1 },
+          where = { filepath = path },
+        })
       else
         table.insert(updated_or_new, { path = path, mtime = mtime })
       end
@@ -102,7 +106,7 @@ local function update(db)
     return
   end
 
-  db:execute("UPDATE dictionary SET valid = 0")
+  db:update("dictionary", { set = { valid = 0 } })
 
   Async.all(vim.tbl_map(function(n)
     local path, mtime = n.path, n.mtime
@@ -177,7 +181,8 @@ function DB.document(completion_item, callback)
   local label = completion_item.label
   require("cmp_dictionary.document")(completion_item, function(completion_item_)
     if completion_item_ and completion_item_.documentation then
-      db:eval("UPDATE items SET documentation = :a WHERE label = :b", { a = completion_item_.documentation, b = label })
+      -- By first_case_insensitive, the case of the label is ambiguous.
+      db:eval("UPDATE items SET documentation = :a WHERE label like :b", { a = completion_item_.documentation, b = label })
     end
     callback(completion_item_)
   end)
