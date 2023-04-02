@@ -182,7 +182,10 @@ function DB.document(completion_item, callback)
   require("cmp_dictionary.document")(completion_item, function(completion_item_)
     if completion_item_ and completion_item_.documentation then
       -- By first_case_insensitive, the case of the label is ambiguous.
-      db:eval("UPDATE items SET documentation = :a WHERE label like :b", { a = completion_item_.documentation, b = label })
+      db:eval(
+        "UPDATE items SET documentation = :a WHERE label like :b",
+        { a = completion_item_.documentation, b = label }
+      )
     end
     callback(completion_item_)
   end)

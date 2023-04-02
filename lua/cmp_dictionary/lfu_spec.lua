@@ -12,7 +12,7 @@ describe("Test for lfu.lua", function()
     assert.are.equals(1, cache:get("a"))
   end)
 
-  it("remove the least frequent cache", function ()
+  it("remove the least frequent cache", function()
     cache:set("a", 1)
     cache:set("b", 2)
     cache:set("c", 3)
