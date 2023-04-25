@@ -13,6 +13,20 @@ function M.read_file_sync(path)
   return buffer
 end
 
+---@param list unknown[]
+---@return unknown[]
+local function deduplicate(list)
+  local set = {}
+  local new_list = {}
+  for _, v in ipairs(list) do
+    if not set[v] then
+      table.insert(new_list, v)
+      set[v] = true
+    end
+  end
+  return new_list
+end
+
 ---@return string[]
 function M.get_dictionaries()
   -- Workaround. vim.opt_global returns now a local value.
@@ -30,6 +44,7 @@ function M.get_dictionaries()
       end
     end
   end
+  dict = deduplicate(dict)
   return dict
 end
 
