@@ -17,7 +17,7 @@ Introduction					*cmp-dictionary-introduction*
 							*cmp-dictionary*
 cmp-dictionary ~
 
-Dictionary completion source for nvim-cmp.
+A dictionary completion source for nvim-cmp.
 <https://github.com/hrsh7th/nvim-cmp>
 
 This plugins refers to the value of |'dictionary'| to load dictionaries and

@@ -1,8 +1,8 @@
 # cmp-dictionary
 
-Dictionary completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp).
+A dictionary completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp).
 
-The easiest way to add your favorite completion candidates to nvim-cmp.
+This plugin provides one of the easiest way to add desired completion candidates to nvim-cmp.
 
 ![image](https://user-images.githubusercontent.com/82267684/145278036-afa56b20-a365-4165-822f-98db5d7f11b1.png)
 
@@ -14,9 +14,6 @@ The easiest way to add your favorite completion candidates to nvim-cmp.
 - [sqlite.lua](https://github.com/kkharji/sqlite.lua) (only if sqlite option is enabled)
 
 # Setting
-
-<details><summary>Example setting</summary><div>
-
 
 ```lua
 require("cmp").setup({
@@ -59,9 +56,6 @@ dict.switcher({
   },
 })
 ```
-
-
-</div></details>
 
 See help for details.
 
