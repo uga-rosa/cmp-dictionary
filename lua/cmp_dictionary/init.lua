@@ -38,6 +38,7 @@ function M.switcher(opt)
   local id = vim.api.nvim_create_augroup("cmp_dictionary", {})
 
   local function callback()
+    vim.opt_local.dictionary = {}
     if opt.filetype then
       vim.opt_local.dictionary:append(opt.filetype[vim.bo.filetype] or "")
     end
