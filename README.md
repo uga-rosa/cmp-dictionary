@@ -8,10 +8,12 @@ This plugin provides one of the easiest way to add desired completion candidates
 
 # Requirements
 
+`plenary.nvim` is not required if neovim is the version with `vim.system()` available.
+
 - neovim >= 0.7
 - nvim-cmp
-- [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) (only document feature)
 - [sqlite.lua](https://github.com/kkharji/sqlite.lua) (only if sqlite option is enabled)
+- [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) (only document feature)
 
 # Setting
 

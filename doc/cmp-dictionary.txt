@@ -32,8 +32,13 @@ Requirements
 - neovim >= 0.7
 - nvim-cmp
   - https://github.com/hrsh7th/nvim-cmp
+- sqlite.lua (only if sqlite option is enabled)
+  - https://github.com/kkharji/sqlite.lua
 - plenary.nvim (only document feature)
   - https://github.com/nvim-lua/plenary.nvim
+
+plenary.nvim is not required if neovim is the version with |vim.system()|
+available.
 
 
 ==============================================================================

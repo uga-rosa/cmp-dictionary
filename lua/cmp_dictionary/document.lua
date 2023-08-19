@@ -32,29 +32,37 @@ end
 ---@param completion_item lsp.CompletionItem
 ---@param callback fun(completion_item: lsp.CompletionItem|nil)
 local function get_document(completion_item, callback)
-  local ok, Job = pcall(require, "plenary.job")
-  if not ok then
-    vim.notify("[cmp-dictionary] document feature requires plenary.nvim")
-    return
-  end
-
   local word = completion_item.label
   local command, args = get_command(word)
   if not command then
     callback(completion_item)
     return
   end
-
-  Job:new({
-    command = command,
-    args = args,
-    on_exit = vim.schedule_wrap(function(j)
-      local result = table.concat(j:result(), "\n")
-      document_cache:set(word, result)
-      completion_item.documentation = result
+  if vim.system then
+    local cmd = args
+    table.insert(cmd, 1, command)
+    vim.system(cmd, {}, function(result)
+      document_cache:set(word, result.stdout)
+      completion_item.documentation = result.stdout
       callback(completion_item)
-    end),
-  }):start()
+    end)
+  else
+    local ok, Job = pcall(require, "plenary.job")
+    if not ok then
+      vim.notify("[cmp-dictionary] document feature requires plenary.nvim")
+      return
+    end
+    Job:new({
+      command = command,
+      args = args,
+      on_exit = vim.schedule_wrap(function(j)
+        local result = table.concat(j:result(), "\n")
+        document_cache:set(word, result)
+        completion_item.documentation = result
+        callback(completion_item)
+      end),
+    }):start()
+  end
 end
 
 ---@param completion_item lsp.CompletionItem
