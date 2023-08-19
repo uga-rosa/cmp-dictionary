@@ -65,14 +65,14 @@ If you use the default settings, this plugin will work without calling setup.
 	    },
 	  }
 	})
-	
+
 	require("cmp_dictionary").setup({
 	  -- Default settings
 	  exact = 2,
 	  first_case_insensitive = false,
 	  document = false,
 	  document_command = "wn %s -over",
-	  async = false, 
+	  async = false,
 	  sqlite = false,
 	  max_items = 1000,
 	  capacity = 5,
