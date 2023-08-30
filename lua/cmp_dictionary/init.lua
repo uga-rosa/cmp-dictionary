@@ -66,12 +66,11 @@ function M.switcher(opt)
     })
   end
 
-  if opt.filepath then
-    vim.api.nvim_create_autocmd("BufEnter", {
-      group = id,
-      callback = callback,
-    })
-  end
+  -- 'dictionary' is buffer-local
+  vim.api.nvim_create_autocmd("BufEnter", {
+    group = id,
+    callback = callback,
+  })
 
   if opt.spelllang then
     vim.api.nvim_create_autocmd("OptionSet", {
