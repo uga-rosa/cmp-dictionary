@@ -39,8 +39,9 @@ function M.get_dictionaries()
   local dict = {}
   for _, al in ipairs({ global, local_ }) do
     for _, d in ipairs(al) do
-      if vim.fn.filereadable(vim.fn.expand(d)) == 1 then
-        table.insert(dict, d)
+      local path = vim.fn.expand(d) --[[@as string]]
+      if vim.fn.filereadable(path) == 1 then
+        table.insert(dict, path)
       end
     end
   end
@@ -100,19 +101,5 @@ function M.debounce(name, callback, timeout)
     end)
   )
 end
-
-M.bool_fn = setmetatable({}, {
-  __index = function(_, key)
-    return function(...)
-      local v = vim.fn[key](...)
-      if not v or v == 0 or v == "" then
-        return false
-      elseif type(v) == "table" and next(v) == nil then
-        return false
-      end
-      return true
-    end
-  end,
-})
 
 return M

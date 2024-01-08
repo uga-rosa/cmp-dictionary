@@ -69,19 +69,16 @@ end
 local function need_to_load(db)
   local dictionaries = util.get_dictionaries()
   local updated_or_new = {}
-  for _, dictionary in ipairs(dictionaries) do
-    local path = vim.fn.expand(dictionary)
-    if util.bool_fn.filereadable(path) then
-      local mtime = vim.fn.getftime(path)
-      local mtime_cache = db:select("dictionary", { select = "mtime", where = { filepath = path } })
-      if mtime_cache[1] and mtime_cache[1].mtime == mtime then
-        db:update("dictionary", {
-          set = { valid = 1 },
-          where = { filepath = path },
-        })
-      else
-        table.insert(updated_or_new, { path = path, mtime = mtime })
-      end
+  for _, path in ipairs(dictionaries) do
+    local mtime = vim.fn.getftime(path)
+    local mtime_cache = db:select("dictionary", { select = "mtime", where = { filepath = path } })
+    if mtime_cache[1] and mtime_cache[1].mtime == mtime then
+      db:update("dictionary", {
+        set = { valid = 1 },
+        where = { filepath = path },
+      })
+    else
+      table.insert(updated_or_new, { path = path, mtime = mtime })
     end
   end
   return updated_or_new
@@ -101,7 +98,7 @@ local read_items = Worker.new(function(path, name)
 end)
 
 local function update(db)
-  local buftype = vim.api.nvim_buf_get_option(0, "buftype")
+  local buftype = vim.api.nvim_get_option_value("buftype", { buf = 0 })
   if buftype ~= "" then
     return
   end
