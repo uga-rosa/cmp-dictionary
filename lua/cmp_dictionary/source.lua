@@ -80,7 +80,7 @@ end
 
 ---@param item lsp.CompletionItem
 ---@param callback fun(completion_item: lsp.CompletionItem|nil)
-function source:resolve(item, callback)
+function source.resolve(_, item, callback)
   local opts = config.options
   if item.documentation == nil and #opts.document_command > 0 then
     local command = vim.tbl_map(function(c)

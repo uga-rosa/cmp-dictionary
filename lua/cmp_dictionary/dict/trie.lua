@@ -25,6 +25,7 @@ end
 ---@return string
 local function read_file(path)
   ---@diagnostic disable: redefined-local
+  -- luacheck: no redefined
   local err, fd = async.uv.fs_open(path, "r", tonumber("0666", 8))
   assert(not err, err)
   local err, stat = async.uv.fs_fstat(fd)
