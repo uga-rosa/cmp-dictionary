@@ -9,4 +9,4 @@ luacheck:
 	luacheck lua/
 
 format:
-	stylua ./lua -g '!**/kit/**'
+	stylua lua/
