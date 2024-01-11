@@ -1,4 +1,5 @@
 local trie = require("cmp_dictionary.dict.trie")
+local grep = require("cmp_dictionary.dict.grep")
 
 local M = {}
 
@@ -9,7 +10,11 @@ local M = {}
 ---@param opts CmpDictionaryOptions
 ---@return CmpDictionaryDict
 function M.new(opts)
-  return trie.new()
+  if #opts.grep_command > 0 then
+    return grep.new(opts.grep_command)
+  else
+    return trie.new()
+  end
 end
 
 return M
