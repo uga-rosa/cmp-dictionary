@@ -27,26 +27,27 @@ function M:update(paths, force)
     return
   end
   self.paths = paths
+
+  local work = vim.uv.new_work(function(path)
+    local fd = assert(vim.uv.fs_open(path, "r", 438))
+    local stat = assert(vim.uv.fs_fstat(fd))
+    local data = assert(vim.uv.fs_read(fd, stat.size, 0))
+    assert(vim.uv.fs_close(fd))
+
+    local Trie = require("cmp_dictionary.lib.trie")
+    local trie = Trie.new()
+    for word in vim.gsplit(data, "%s+", { trimempty = true }) do
+      trie:insert(word)
+    end
+    return vim.json.encode({ path = path, trie = trie })
+  end, function(json_str)
+    local obj = vim.json.decode(json_str)
+    self.trie_map[obj.path] = setmetatable(obj.trie, { __index = Trie })
+  end)
+
   for _, path in ipairs(paths) do
     if force or not self.trie_map[path] then
-      vim.uv
-        .new_work(function(path)
-          local fd = assert(vim.uv.fs_open(path, "r", 438))
-          local stat = assert(vim.uv.fs_fstat(fd))
-          local data = assert(vim.uv.fs_read(fd, stat.size, 0))
-          assert(vim.uv.fs_close(fd))
-
-          local Trie = require("cmp_dictionary.lib.trie")
-          local trie = Trie.new()
-          for word in vim.gsplit(data, "%s+", { trimempty = true }) do
-            trie:insert(word)
-          end
-          return vim.json.encode(trie)
-        end, function(json_str)
-          local trie = setmetatable(vim.json.decode(json_str), { __index = Trie })
-          self.trie_map[path] = trie
-        end)
-        :queue(path)
+      work:queue(path)
     end
   end
 end
