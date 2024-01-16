@@ -1,5 +1,4 @@
 local Trie = require("cmp_dictionary.lib.trie")
-local async = require("plenary.async")
 
 ---@class CmpDictionaryDictTrie: CmpDictionaryDict
 ---@field trie_map table<string, Trie>
@@ -21,23 +20,6 @@ local function same(x, y)
   return vim.json.encode(x) == vim.json.encode(y)
 end
 
----@param path string
----@return string
-local function read_file(path)
-  ---@diagnostic disable: redefined-local
-  -- luacheck: no redefined
-  local err, fd = async.uv.fs_open(path, "r", tonumber("0666", 8))
-  assert(not err, err)
-  local err, stat = async.uv.fs_fstat(fd)
-  assert(not err, err)
-  local err, data = async.uv.fs_read(fd, stat.size, 0)
-  assert(not err, err)
-  local err = async.uv.fs_close(fd)
-  assert(not err, err)
-  ---@diagnostic enable
-  return data
-end
-
 ---@param paths string[]
 ---@param force? boolean
 function M:update(paths, force)
@@ -45,17 +27,28 @@ function M:update(paths, force)
     return
   end
   self.paths = paths
-  async.void(function()
-    for _, path in ipairs(paths) do
-      -- if force or not self.trie_map[path] then
-      local trie = Trie.new()
-      for word in vim.gsplit(read_file(path), "%s+", { trimempty = true }) do
-        trie:insert(word)
-      end
-      self.trie_map[path] = trie
-      -- end
+  for _, path in ipairs(paths) do
+    if force or not self.trie_map[path] then
+      vim.uv
+        .new_work(function(path)
+          local fd = assert(vim.uv.fs_open(path, "r", 438))
+          local stat = assert(vim.uv.fs_fstat(fd))
+          local data = assert(vim.uv.fs_read(fd, stat.size, 0))
+          assert(vim.uv.fs_close(fd))
+
+          local Trie = require("cmp_dictionary.lib.trie")
+          local trie = Trie.new()
+          for word in vim.gsplit(data, "%s+", { trimempty = true }) do
+            trie:insert(word)
+          end
+          return vim.json.encode(trie)
+        end, function(json_str)
+          local trie = setmetatable(vim.json.decode(json_str), { __index = Trie })
+          self.trie_map[path] = trie
+        end)
+        :queue(path)
     end
-  end)()
+  end
 end
 
 ---@param prefix string
