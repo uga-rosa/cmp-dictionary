@@ -2,7 +2,7 @@ name: test
 
 on:
   push:
-    branchs:
+    branches:
       - main
     paths:
       - '**.lua'
