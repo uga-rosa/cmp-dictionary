@@ -1,12 +1,12 @@
 local buffer = require("string.buffer")
 local Trie = require("cmp_dictionary.lib.trie")
 
----@class CmpDictionaryDictTrie: CmpDictionaryDict
+---@class cmp.dictionary.dict.trie: cmp.dictionary.dict
 ---@field trie_map table<string, Trie>
 ---@field paths string[]
 local M = {}
 
----@return CmpDictionaryDictTrie
+---@return cmp.dictionary.dict.trie
 function M.new()
   return setmetatable({
     trie_map = {},

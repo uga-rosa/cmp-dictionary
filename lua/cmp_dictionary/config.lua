@@ -1,4 +1,4 @@
----@class CmpDictionaryOptions
+---@class cmp.dictionary.options
 ---@field paths string[]
 ---@field exact integer
 ---@field first_case_insensitive boolean
@@ -29,7 +29,7 @@ end
 
 local M = {}
 
----@type CmpDictionaryOptions
+---@type cmp.dictionary.options
 M.options = default
 
 function M.setup(opt)
