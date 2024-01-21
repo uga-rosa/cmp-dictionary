@@ -2,16 +2,17 @@ local config = require("cmp_dictionary.config")
 local Dict = require("cmp_dictionary.dict")
 local util = require("cmp_dictionary.util")
 
+---@class cmp.Source.dictionary: cmp.Source
+---@field dict cmp.dictionary.dict
 local source = {}
+source.__index = source
 
 function source.new()
-  local dict = Dict.new(config.options)
-  return setmetatable({
-    dict = dict,
-  }, { __index = source })
+  local self = setmetatable({}, source)
+  self.dict = Dict.new()
+  return self
 end
 
----@return string
 function source.get_keyword_pattern()
   return [[\k\+]]
 end
