@@ -65,7 +65,11 @@ end
 local function fixDeprecated(opts)
   _fix(opts, "exact", "exact_length")
   _fix(opts, "max_items", "max_number_items")
-  _fix(opts, "document")
+  if is.Boolean(opts.document) or opts.document_command then
+    opts.document = nil
+    opts.document_command = nil
+    warning("You need to check `:h cmp-dictionary-option-document`")
+  end
   _fix(opts, "sqlite")
   _fix(opts, "capacity")
 end
