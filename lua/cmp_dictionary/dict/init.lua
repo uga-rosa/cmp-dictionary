@@ -1,5 +1,5 @@
 local trie = require("cmp_dictionary.dict.trie")
-local grep = require("cmp_dictionary.dict.grep")
+local external = require("cmp_dictionary.dict.external")
 
 local M = {}
 
@@ -10,8 +10,8 @@ local M = {}
 ---@param opts cmp.dictionary.options
 ---@return cmp.dictionary.dict
 function M.new(opts)
-  if #opts.grep_command > 0 then
-    return grep.new(opts.grep_command)
+  if opts.external.enable then
+    return external.new(opts.external.command)
   else
     return trie.new()
   end

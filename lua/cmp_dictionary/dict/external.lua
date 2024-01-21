@@ -1,12 +1,12 @@
 local util = require("cmp_dictionary.util")
 
----@class cmp.dictionary.dict.grep: cmp.dictionary.dict
+---@class cmp.dictionary.dict.external: cmp.dictionary.dict
 ---@field command string[]
 ---@field paths string[]
 local M = {}
 
 ---@param command string[]
----@return cmp.dictionary.dict.grep
+---@return cmp.dictionary.dict.external
 function M.new(command)
   return setmetatable({
     command = command,
