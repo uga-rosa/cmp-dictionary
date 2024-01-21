@@ -18,8 +18,8 @@ local default = {
     command = {},
   },
   external = {
-    enable = true,
-    command = { "look", "${prefix}", "${path}" },
+    enable = false,
+    command = {},
   },
 }
 

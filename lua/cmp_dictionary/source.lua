@@ -53,8 +53,12 @@ end
 ---@param callback fun(response: lsp.CompletionList)
 function source:complete(request, callback)
   local opts = config.options
-  local req = request.context.cursor_before_line:sub(request.offset):sub(1, opts.exact_length)
-  local isIncomplete = #req < opts.exact_length
+  local req = request.context.cursor_before_line:sub(request.offset)
+  local isIncomplete = false
+  if opts.exact_length > 0 then
+    req = req:sub(1, opts.exact_length)
+    isIncomplete = #req < opts.exact_length
+  end
 
   local items
   if opts.first_case_insensitive then

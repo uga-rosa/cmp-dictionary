@@ -34,7 +34,7 @@ function M:update(paths, force)
     assert(vim.uv.fs_close(fd))
 
     local trie = Trie.new()
-    for word in vim.gsplit(data, "%s+", { trimempty = true }) do
+    for word in vim.gsplit(data, "\r?\n", { trimempty = true }) do
       trie:insert(word)
     end
     return buffer.encode({ path = path, trie = trie })
