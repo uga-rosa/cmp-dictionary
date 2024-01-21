@@ -3,6 +3,8 @@ local external = require("cmp_dictionary.dict.external")
 local root = require("vusted.helper").find_plugin_root("cmp_dictionary")
 
 describe("test for dict.external", function()
+  vim.opt.runtimepath:append("../plenary.nvim")
+
   local dict = external.new({ "look", "${prefix}", "${path}" })
   dict:update({ root .. "/data/words" })
 
