@@ -3,12 +3,11 @@
 ==============================================================================
 Contents					*cmp-dictionary-contents*
 
-Introduction					|cmp-dictionary-introduction|
-Commands					|cmp-dictionary-commands|
-Setting						|cmp-dictionary-setting|
-Option						|cmp-dictionary-option|
-Find dictionaries				|cmp-dictionary-find-dictionaries|
-Create dictionaries				|cmp-dictionary-create-dictionaries|
+Introduction				|cmp-dictionary-introduction|
+Setting					|cmp-dictionary-setting|
+Options					|cmp-dictionary-options|
+Find dictionaries			|cmp-dictionary-find-dictionaries|
+Create dictionaries			|cmp-dictionary-create-dictionaries|
 
 ==============================================================================
 Introduction					*cmp-dictionary-introduction*
@@ -55,7 +54,7 @@ Example setting.
 
 
 ==============================================================================
-Option							*cmp-dictionary-options*
+Options							*cmp-dictionary-options*
 
 						*cmp-dictionary-option-paths*
 paths ~
