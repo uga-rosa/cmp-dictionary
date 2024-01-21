@@ -37,12 +37,11 @@ function M:update(paths, force)
     for word in vim.gsplit(data, "\r?\n", { trimempty = true }) do
       trie:insert(word)
     end
-    return buffer.encode({ path = path, trie = trie })
+    return path, buffer.encode(trie)
     ---@diagnostic enable
-  end, function(encoded)
-    local obj = buffer.decode(encoded)
-    ---@cast obj { path: string, trie: Trie }
-    self.trie_map[obj.path] = setmetatable(obj.trie, { __index = Trie })
+  end, function(path, encoded_trie)
+    local trie = buffer.decode(encoded_trie) --[[@as Trie]]
+    self.trie_map[path] = setmetatable(trie, { __index = Trie })
   end)
 
   for _, path in ipairs(paths) do
