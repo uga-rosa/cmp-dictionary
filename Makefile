@@ -1,12 +1,9 @@
-.PHONY: test vusted luacheck format
+.PHONY: test vusted format
 
-test: luacheck vusted
+test: vusted
 
 vusted:
 	vusted lua/
 
-luacheck:
-	luacheck lua/
-
 format:
-	stylua ./lua -g '!**/kit/**'
+	stylua lua/

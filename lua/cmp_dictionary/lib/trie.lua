@@ -34,23 +34,18 @@ end
 ---@param node TrieNode
 ---@param prefix string
 ---@param word_list string[]
----@param limit integer
-function Trie:search_prefix(node, prefix, word_list, limit)
-  if limit >= 0 and #word_list >= limit then
-    return
-  end
+function Trie:search_prefix(node, prefix, word_list)
   if node.end_of_word then
     table.insert(word_list, prefix)
   end
   for char, child in pairs(node.children) do
-    self:search_prefix(child, prefix .. char, word_list, limit)
+    self:search_prefix(child, prefix .. char, word_list)
   end
 end
 
 ---@param prefix string
----@param limit integer
 ---@return string[]
-function Trie:search(prefix, limit)
+function Trie:search(prefix)
   local node = self.root
   for char in vim.gsplit(prefix, "") do
     node = node.children[char]
@@ -59,7 +54,7 @@ function Trie:search(prefix, limit)
     end
   end
   local word_list = {}
-  self:search_prefix(node, prefix, word_list, limit)
+  self:search_prefix(node, prefix, word_list)
   return word_list
 end
 

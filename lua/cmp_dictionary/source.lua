@@ -1,125 +1,106 @@
-local source = {}
-
-local utf8 = require("cmp_dictionary.lib.utf8")
 local config = require("cmp_dictionary.config")
-local caches = require("cmp_dictionary.caches")
-local db = require("cmp_dictionary.db")
+local Dict = require("cmp_dictionary.dict")
+local util = require("cmp_dictionary.util")
+
+---@class cmp.Source.dictionary: cmp.Source
+---@field dict cmp.dictionary.dict
+local source = {}
+source.__index = source
 
 function source.new()
-  return setmetatable({}, { __index = source })
+  local self = setmetatable({}, source)
+  self.dict = Dict.new()
+  self:_update()
+  return self
 end
 
----@return string
 function source.get_keyword_pattern()
   return [[\k\+]]
 end
 
-local candidate_cache = {
-  req = "",
-  items = {},
-}
+---@param x unknown
+---@return boolean
+local function Boolean(x)
+  return not not x
+end
 
 ---@param str string
 ---@return boolean
 local function is_capital(str)
-  return str:find("^%u") and true or false
+  return Boolean(str:find("^%u"))
 end
 
 ---@param str string
 ---@return string
-local function to_lower_first(str)
-  local l = str:gsub("^.", string.lower)
-  return l
-end
-
----@param str string
----@return string
-local function to_upper_first(str)
-  local u = str:gsub("^.", string.upper)
+local function capitalize(str)
+  local u = str:gsub("^%l", string.upper)
   return u
 end
 
----@param req string
----@param isIncomplete boolean
----@return table
-function source.get_candidate(req, isIncomplete)
-  if candidate_cache.req == req then
-    return { items = candidate_cache.items, isIncomplete = isIncomplete }
-  end
+---@param str string
+---@return string
+local function decapitalize(str)
+  local l = str:gsub("^%u", string.lower)
+  return l
+end
 
-  local items
-  local request = config.get("sqlite") and db.request or caches.request
-  items, isIncomplete = request(req, isIncomplete)
-
-  if config.get("first_case_insensitive") then
-    local pre, post = to_upper_first, to_lower_first
-    if is_capital(req) then
-      pre, post = post, pre
-    end
-    for _, item in ipairs(request(pre(req), isIncomplete)) do
-      table.insert(items, { label = post(item.label), detail = item.detail })
-    end
-  end
-
-  candidate_cache.req = req
-  candidate_cache.items = items
-
-  return { items = items, isIncomplete = isIncomplete }
+function source:_update()
+  local opts = config.options
+  self.dict:update(opts.paths)
 end
 
 ---@param request cmp.SourceCompletionApiParams
----@param callback fun(response: lsp.CompletionResponse|nil)
-function source.complete(_, request, callback)
-  -- Clear the cache since the dictionary has been updated.
-  if config.get("sqlite") then
-    if db.is_just_updated() then
-      candidate_cache = {}
-    end
-  else
-    if caches.is_just_updated() then
-      candidate_cache = {}
-    end
+---@param callback fun(response: lsp.CompletionList)
+function source:complete(request, callback)
+  local opts = config.options
+  local req = request.context.cursor_before_line:sub(request.offset)
+  local isIncomplete = false
+  if opts.exact_length > 0 then
+    req = req:sub(1, opts.exact_length)
+    isIncomplete = #req < opts.exact_length
   end
 
-  local exact = config.get("exact")
-
-  ---@type string
-  local line = request.context.cursor_before_line
-  local offset = request.offset
-  line = line:sub(offset)
-  if line == "" then
-    return
-  end
-
-  local req, isIncomplete
-  if exact > 0 then
-    local line_len = utf8.len(line)
-    if line_len <= exact then
-      req = line
-      isIncomplete = line_len < exact
+  local items
+  if opts.first_case_insensitive then
+    if is_capital(req) then
+      items = vim.list_extend(
+        self.dict:search(req),
+        vim.tbl_map(function(item)
+          item.label = capitalize(item.label)
+          return item
+        end, self.dict:search(decapitalize(req)))
+      )
     else
-      local last = exact
-      if line_len ~= #line then
-        last = utf8.offset(line, exact + 1) - 1
-      end
-      req = line:sub(1, last)
-      isIncomplete = false
+      items = vim.list_extend(
+        self.dict:search(req),
+        vim.tbl_map(function(item)
+          item.label = decapitalize(item.label)
+          return item
+        end, self.dict:search(capitalize(req)))
+      )
     end
   else
-    -- must be -1
-    req = line
-    isIncomplete = true
+    items = self.dict:search(req)
+  end
+  if opts.max_number_items > 0 and #items > opts.max_number_items then
+    items = vim.list_slice(items, 1, opts.max_number_items)
   end
 
-  callback(source.get_candidate(req, isIncomplete))
+  callback({ items = items, isIncomplete = isIncomplete })
 end
 
-function source.resolve(_, completion_item, callback)
-  if config.get("sqlite") then
-    db.document(completion_item, callback)
-  else
-    require("cmp_dictionary.document")(completion_item, callback)
+---@param item lsp.CompletionItem
+---@param callback fun(completion_item: lsp.CompletionItem|nil)
+function source.resolve(_, item, callback)
+  local opts = config.options
+  if item.documentation == nil and opts.document.enable then
+    local command = vim.tbl_map(function(c)
+      return c:gsub("${label}", item.label)
+    end, opts.document.command)
+    local result = util.system(command)
+    item.documentation = result
   end
+  callback(item)
 end
 
 return source
