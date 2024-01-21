@@ -85,6 +85,10 @@ function M.setup(opts)
   opts = opts or {}
   validator(opts)
   M.options = vim.tbl_deep_extend("force", {}, default, M.options, opts)
+
+  if opts.paths then
+    require("cmp_dictionary").update()
+  end
 end
 
 return M

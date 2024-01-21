@@ -10,6 +10,7 @@ source.__index = source
 function source.new()
   local self = setmetatable({}, source)
   self.dict = Dict.new()
+  self:_update()
   return self
 end
 
@@ -41,6 +42,11 @@ end
 local function decapitalize(str)
   local l = str:gsub("^%u", string.lower)
   return l
+end
+
+function source:_update()
+  local opts = config.options
+  self.dict:update(opts.paths)
 end
 
 ---@param request cmp.SourceCompletionApiParams
