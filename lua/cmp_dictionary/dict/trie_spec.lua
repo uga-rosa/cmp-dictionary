@@ -12,7 +12,7 @@ local function assert_same_items(x, y)
   assert.same(x, y)
 end
 
-describe("test for dict.external", function()
+describe("test for dict.trie", function()
   local dict = trie.new()
   dict:update({ root .. "/data/words" })
 
