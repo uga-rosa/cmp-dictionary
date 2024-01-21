@@ -15,14 +15,15 @@ function M.system(command)
       )
       return {}
     end
-    local job = Job:new({
+    local result = {}
+    Job:new({
       command = command[1],
       args = vim.list_slice(command, 2),
-    }):wait()
-    if not job then
-      return {}
-    end
-    return job:result()
+      on_exit = function(j)
+        result = j:result()
+      end,
+    }):sync()
+    return result
   end
 end
 
