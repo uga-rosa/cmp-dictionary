@@ -20,6 +20,7 @@ function M:update(paths)
 end
 
 ---@param prefix string
+---@return lsp.CompletionItem[]
 function M:search(prefix)
   local items = {}
   for _, path in ipairs(self.paths) do

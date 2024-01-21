@@ -53,18 +53,18 @@ function M:update(paths, force)
 end
 
 ---@param prefix string
+---@return lsp.CompletionItem[]
 function M:search(prefix)
   local items = {}
   for _, path in ipairs(self.paths) do
     local trie = self.trie_map[path]
-    if trie then
+    if not trie then
+      -- The dictionary has not yet been loaded.
+    else
       local info = string.format("belong to `%s`", vim.fn.fnamemodify(path, ":t"))
-      items = vim.list_extend(
-        items,
-        vim.tbl_map(function(word)
-          return { label = word, info = info }
-        end, trie:search(prefix))
-      )
+      for _, word in ipairs(trie:search(prefix)) do
+        table.insert(items, { label = word, info = info })
+      end
     end
   end
   return items

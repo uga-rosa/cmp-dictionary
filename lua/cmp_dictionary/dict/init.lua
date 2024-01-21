@@ -6,7 +6,7 @@ local M = {}
 
 ---@class cmp.dictionary.dict
 ---@field update fun(self: cmp.dictionary.dict, paths: string[], force?: boolean)
----@field search fun(self: cmp.dictionary.dict, prefix: string): string[]
+---@field search fun(self: cmp.dictionary.dict, prefix: string): lsp.CompletionItem[]
 
 ---@return cmp.dictionary.dict
 function M.new()
