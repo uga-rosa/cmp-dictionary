@@ -27,12 +27,12 @@ function M:search(prefix)
       return c:gsub("${prefix}", prefix):gsub("${path}", path)
     end, self.command)
     local info = string.format("belong to `%s`", vim.fn.fnamemodify(path, ":t"))
-    items = vim.list_extend(
-      items,
-      vim.tbl_map(function(word)
-        return { label = word, info = info }
-      end, vim.split(util.system(command), "\n"))
-    )
+    local output = util.system(command)
+    for _, word in ipairs(output) do
+      if word ~= "" then
+        table.insert(items, { label = word, info = info })
+      end
+    end
   end
   return items
 end
