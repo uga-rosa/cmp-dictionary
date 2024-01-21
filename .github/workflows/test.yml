@@ -1,11 +1,13 @@
 name: test
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
     paths:
       - '**.lua'
+      - '.github/workflows/*.yml'
   pull_request:
     branches:
       - main
