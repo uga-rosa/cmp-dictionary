@@ -14,7 +14,7 @@ end
 
 describe("test for dict.external", function()
   local dict = trie.new()
-  dict:update({ vim.fs.joinpath(root, "data", "words") })
+  dict:update({ root .. "/data/words" })
 
   vim.wait(1000)
 

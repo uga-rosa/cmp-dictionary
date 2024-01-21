@@ -4,7 +4,7 @@ local root = require("vusted.helper").find_plugin_root("cmp_dictionary")
 
 describe("test for dict.external", function()
   local dict = external.new({ "look", "${prefix}", "${path}" })
-  dict:update({ vim.fs.joinpath(root, "data", "words") })
+  dict:update({ root .. "/data/words" })
 
   it("search words", function()
     assert.same({
