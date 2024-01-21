@@ -6,6 +6,9 @@ on:
       - main
     paths:
       - '**.lua'
+  pull_request:
+    branches:
+      - main
 
 jobs:
   integration:
