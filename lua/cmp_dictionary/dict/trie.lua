@@ -14,17 +14,10 @@ function M.new()
   }, { __index = M })
 end
 
----@param x unknown
----@param y unknown
----@return boolean
-local function same(x, y)
-  return vim.json.encode(x) == vim.json.encode(y)
-end
-
 ---@param paths string[]
 ---@param force? boolean
 function M:update(paths, force)
-  if not force and same(self.paths, paths) then
+  if not force and vim.deep_equal(self.paths, paths) then
     return
   end
   self.paths = paths
