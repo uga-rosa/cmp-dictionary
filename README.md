@@ -8,12 +8,9 @@ This plugin provides one of the easiest way to add desired completion candidates
 
 # Requirements
 
-`plenary.nvim` is not required if neovim is the version with `vim.system()` available.
-
 - neovim >= 0.7
 - nvim-cmp
-- [sqlite.lua](https://github.com/kkharji/sqlite.lua) (only if sqlite option is enabled)
-- [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) (only document feature)
+- `vim.system()` or [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) (for some optional features).
 
 # Setting
 
@@ -21,7 +18,7 @@ This plugin provides one of the easiest way to add desired completion candidates
 require("cmp").setup({
   -- other settings
   sources = {
-  -- other sources
+    -- other sources
     {
       name = "dictionary",
       keyword_length = 2,
@@ -29,37 +26,15 @@ require("cmp").setup({
   }
 })
 
-local dict = require("cmp_dictionary")
-
-dict.setup({
-  -- The following are default values.
-  exact = 2,
-  first_case_insensitive = false,
-  document = false,
-  document_command = "wn %s -over",
-  sqlite = false,
-  max_items = -1,
-  capacity = 5,
-  debug = false,
-})
-
-dict.switcher({
-  filetype = {
-    lua = "/path/to/lua.dict",
-    javascript = { "/path/to/js.dict", "/path/to/js2.dict" },
-  },
-  filepath = {
-    [".*xmake.lua"] = { "/path/to/xmake.dict", "/path/to/lua.dict" },
-    ["%.tmux.*%.conf"] = { "/path/to/js.dict", "/path/to/js2.dict" },
-  },
-  spelllang = {
-    en = "/path/to/english.dict",
+require("cmp_dictionary").setup({
+  paths = { "/usr/share/dict/words" },
+  exact_length = 2,
+  first_case_insensitive = true,
+  document = {
+    enable = true,
+    command = { "wn", "${label}", "-over" },
   },
 })
 ```
 
 See help for details.
-
-# Examples of usage
-
-See [wiki](https://github.com/uga-rosa/cmp-dictionary/wiki/Examples-of-usage)
