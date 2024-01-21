@@ -46,8 +46,8 @@ end
 ---@param callback fun(response: lsp.CompletionList)
 function source:complete(request, callback)
   local opts = config.options
-  local req = request.context.cursor_before_line:sub(request.offset):sub(1, opts.exact)
-  local isIncomplete = #req < opts.exact
+  local req = request.context.cursor_before_line:sub(request.offset):sub(1, opts.exact_length)
+  local isIncomplete = #req < opts.exact_length
 
   local items
   if opts.first_case_insensitive then
@@ -71,8 +71,8 @@ function source:complete(request, callback)
   else
     items = self.dict:search(req)
   end
-  if #items > opts.max_items then
-    items = vim.list_slice(items, 1, opts.max_items)
+  if opts.max_number_items > 0 and #items > opts.max_number_items then
+    items = vim.list_slice(items, 1, opts.max_number_items)
   end
 
   callback({ items = items, isIncomplete = isIncomplete })
@@ -82,10 +82,10 @@ end
 ---@param callback fun(completion_item: lsp.CompletionItem|nil)
 function source.resolve(_, item, callback)
   local opts = config.options
-  if item.documentation == nil and #opts.document_command > 0 then
+  if item.documentation == nil and opts.document.enable then
     local command = vim.tbl_map(function(c)
       return c:gsub("${label}", item.label)
-    end, opts.document_command)
+    end, opts.document.command)
     local result = util.system(command)
     item.documentation = result
   end
