@@ -1,5 +1,6 @@
 local buffer = require("string.buffer")
 local Trie = require("cmp_dictionary.lib.trie")
+local uv = vim.uv or vim.loop
 
 ---@class cmp.dictionary.dict.trie: cmp.dictionary.dict
 ---@field trie_map table<string, Trie>
@@ -22,16 +23,17 @@ function M:update(paths, force)
   end
   self.paths = paths
 
-  local work = vim.uv.new_work(function(path)
+  local work = uv.new_work(function(path)
     -- Can't reference upvalue because it's a separate thread.
     ---@diagnostic disable
     local Trie = require("cmp_dictionary.lib.trie")
     local buffer = require("string.buffer")
+    local uv = vim.uv or vim.loop
 
-    local fd = assert(vim.uv.fs_open(path, "r", 438))
-    local stat = assert(vim.uv.fs_fstat(fd))
-    local data = assert(vim.uv.fs_read(fd, stat.size, 0))
-    assert(vim.uv.fs_close(fd))
+    local fd = assert(uv.fs_open(path, "r", 438))
+    local stat = assert(uv.fs_fstat(fd))
+    local data = assert(uv.fs_read(fd, stat.size, 0))
+    assert(uv.fs_close(fd))
 
     local trie = Trie.new()
     for word in vim.gsplit(data, "\r?\n", { trimempty = true }) do
