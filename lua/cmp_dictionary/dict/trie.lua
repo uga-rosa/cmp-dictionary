@@ -26,7 +26,6 @@ function M:update(paths, force)
     -- Can't reference upvalue because it's a separate thread.
     ---@diagnostic disable
     local Trie = require("cmp_dictionary.lib.trie")
-    local buffer = require("string.buffer")
     local uv = vim.uv or vim.loop
 
     local fd = assert(uv.fs_open(path, "r", 438))
