@@ -1,4 +1,3 @@
-local buffer = require("string.buffer")
 local Trie = require("cmp_dictionary.lib.trie")
 local uv = vim.uv or vim.loop
 
@@ -39,10 +38,10 @@ function M:update(paths, force)
     for word in vim.gsplit(data, "\r?\n", { trimempty = true }) do
       trie:insert(word)
     end
-    return path, buffer.encode(trie)
+    return path, vim.json.encode(trie)
     ---@diagnostic enable
   end, function(path, encoded_trie)
-    local trie = buffer.decode(encoded_trie) --[[@as Trie]]
+    local trie = vim.json.decode(encoded_trie) --[[@as Trie]]
     self.trie_map[path] = setmetatable(trie, { __index = Trie })
   end)
 
