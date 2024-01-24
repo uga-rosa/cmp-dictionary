@@ -62,7 +62,7 @@ paths ~
 
 	List of dictionary paths.
 	A `dictionary` is a file containing a list of words separated by
-	newlines (`\n` or `\r\n`).
+	newlines (`\n` or `\r\n`). The limit is 500 bytes per word.
 
 
 					*cmp-dictionary-option-exact_length*
@@ -156,7 +156,7 @@ You can download dic from aspell.net or installing by package manager, xbps
 extract to
 <https://ftp.gnu.org/gnu/aspell/dict/0index.html>
 
->
+>bash
 	$ ls /usr/share/dict/
 	american-english	british-english	words
 <
@@ -164,8 +164,8 @@ extract to
 After installing aspell and dictionary you want, run following command to get
 dic for this plugin (plain text).
 
->
-	aspell -d <lang> dump master | aspell -l <lang> expand > my.dict
+>bash
+	aspell -d <lang> dump master | aspell -l <lang> expand | sed 's/\s\+/\n/g' > my.dict
 <
 
 
