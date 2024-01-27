@@ -23,6 +23,9 @@ function M.system(command)
         result = j:result()
       end,
     }):sync()
+    if (type(result) == "table") then
+      result = table.concat(result, "\n")
+    end
     return result
   end
 end
