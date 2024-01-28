@@ -98,7 +98,7 @@ function source.resolve(_, item, callback)
       return c:gsub("${label}", item.label)
     end, opts.document.command)
     local result = util.system(command)
-    item.documentation = result
+    item.documentation = table.concat(result, "\n")
   end
   callback(item)
 end
