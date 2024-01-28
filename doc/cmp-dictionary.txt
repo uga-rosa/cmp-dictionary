@@ -28,6 +28,10 @@ Requirements
 ==============================================================================
 Setting							*cmp-dictionary-setting*
 
+Each time setup() is called, it merges with the previous setup. That is, if
+only some options are specified, the values of other options specified in
+previous setups remain the same.
+
 Example setting.
 >lua
 	require("cmp").setup({
@@ -41,14 +45,32 @@ Example setting.
 	  }
 	})
 
+	local dict = {
+	  ["*"] = { "/usr/share/dict/words" },
+	  ft = {
+	    foo = { "/path/to/foo.dict" },
+	  },
+	}
+
 	require("cmp_dictionary").setup({
-	  paths = { "/usr/share/dict/words" },
+	  paths = dict["*"],
 	  exact_length = 2,
 	  first_case_insensitive = true,
 	  document = {
 	    enable = true,
 	    command = { "wn", "${label}", "-over" },
 	  },
+	})
+
+	vim.api.nvim_create_autocmd("FileType", {
+	  pattern = "*",
+	  callback = function(ev)
+	    local paths = dict.ft[ev.match] or {}
+	    vim.list_extend(paths, dict["*"])
+	    require("cmp_dictionary").setup({
+	      paths = paths,
+	    })
+	  end
 	})
 <
 
