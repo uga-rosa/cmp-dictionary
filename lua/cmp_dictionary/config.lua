@@ -88,6 +88,12 @@ M.options = default
 function M.setup(opts)
   opts = opts or {}
   validator(opts)
+  if opts.paths then
+    opts.paths = vim.tbl_map(function(path)
+      return vim.fn.expand(path)
+    end, opts.paths)
+  end
+
   M.options = vim.tbl_deep_extend("force", {}, M.options, opts)
 
   if opts.paths then
