@@ -1,7 +1,7 @@
-**WARNING**
+# WARNING
 
-This is no longer maintained.
-I will archive it in due course.
+**This is no longer maintained.**
+**I will archive it in due course.**
 
 # cmp-dictionary
 
