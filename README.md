@@ -1,3 +1,8 @@
+**WARNING**
+
+This is no longer maintained.
+I will archive it in due course.
+
 # cmp-dictionary
 
 A dictionary completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp).
