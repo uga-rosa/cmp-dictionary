@@ -60,6 +60,12 @@ function source:complete(request, callback)
     isIncomplete = #req < opts.exact_length
   end
 
+  -- Calls by cmp.complete ignore the keyword_length.
+  if #req < request.keyword_length then
+    callback({ items = {}, isIncomplete = true })
+    return
+  end
+
   local items
   if opts.first_case_insensitive then
     if is_capital(req) then
