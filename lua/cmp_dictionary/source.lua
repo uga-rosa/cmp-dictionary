@@ -61,7 +61,7 @@ function source:complete(request, callback)
   end
 
   -- Calls by cmp.complete ignore the keyword_length.
-  if #req < request.keyword_length then
+  if request.keyword_length and #req < request.keyword_length then
     callback({ items = {}, isIncomplete = true })
     return
   end
