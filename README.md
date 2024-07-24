@@ -10,6 +10,9 @@ This plugin provides one of the easiest way to add desired completion candidates
 
 - neovim >= 0.7
 - nvim-cmp
+
+## Optional
+
 - `vim.system()` or [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) (for some optional features).
 
 # Setting
@@ -29,12 +32,6 @@ require("cmp").setup({
 require("cmp_dictionary").setup({
   paths = { "/usr/share/dict/words" },
   exact_length = 2,
-  first_case_insensitive = true,
-  document = {
-    enable = true,
-    -- You need to install `wn` command; https://wordnet.princeton.edu/
-    command = { "wn", "${label}", "-over" },
-  },
 })
 ```
 
