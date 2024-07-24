@@ -32,6 +32,7 @@ require("cmp_dictionary").setup({
   first_case_insensitive = true,
   document = {
     enable = true,
+    -- You need to install `wn` command; https://wordnet.princeton.edu/
     command = { "wn", "${label}", "-over" },
   },
 })
