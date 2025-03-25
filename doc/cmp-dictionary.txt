@@ -62,10 +62,10 @@ Example setting.
 	  },
 	})
 
-	vim.api.nvim_create_autocmd("FileType", {
+	vim.api.nvim_create_autocmd("BufEnter", {
 	  pattern = "*",
 	  callback = function(ev)
-	    local paths = dict.ft[ev.match] or {}
+	    local paths = dict.ft[vim.bo.filetype] or {}
 	    vim.list_extend(paths, dict["*"])
 	    require("cmp_dictionary").setup({
 	      paths = paths,
