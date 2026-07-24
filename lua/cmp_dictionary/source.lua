@@ -88,6 +88,17 @@ function source:complete(request, callback)
   else
     items = self.dict:search(req)
   end
+
+  -- Filter out duplicates that occur when a word appears in multiple dictionaries.
+  local seen = {}
+  items = vim.tbl_filter(function(item)
+    if seen[item.label] then
+      return false
+    end
+    seen[item.label] = true
+    return true
+  end, items)
+
   if opts.max_number_items > 0 and #items > opts.max_number_items then
     items = vim.list_slice(items, 1, opts.max_number_items)
   end
